@@ -67,8 +67,16 @@ export const UserAuthProvider = ({ children }: PropsWithChildren) => {
           position: "top-center",
         });
       }
-    } catch (error: any) {
-      if (error.response?.status === 409) {
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "status" in error.response &&
+        error.response.status === 409
+      ) {
         toast.error("Имэйл хаяг бүртгэлтэй байна.", {
           position: "top-center",
         });

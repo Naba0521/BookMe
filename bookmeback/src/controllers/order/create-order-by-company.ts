@@ -26,6 +26,7 @@ export const CreateOrderByCompany: RequestHandler = async (req, res) => {
       res.status(409).json({
         message: "Тэр цаг аль хэдийн захиалга авсан байна (unique index).",
       });
+      return;
     }
     console.error(error);
     res.status(500).json({ message: "Error creating order" });

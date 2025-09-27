@@ -45,16 +45,18 @@ export const CreateOrderController: RequestHandler = async (
       $push: { bookings: order._id },
     });
 
-    res.status(201).json({ message: "order created", order }); // <-- IMPORTANT: add `return`
+    res.status(201).json({ message: "order created", order });
+    return;
   } catch (error: any) {
     if (error.code === 11000) {
       res.status(409).json({
         message: "Тэр цаг аль хэдийн захиалга авсан байна (unique index).",
       });
+      return;
     }
 
     console.error(error);
     res.status(500).json({ message: "Error creating order" });
+    return;
   }
 };
-

@@ -32,7 +32,7 @@ export const CompanyAuthProvider = ({ children }: PropsWithChildren) => {
       localStorage.setItem("company_token", data.token);
       setCompany(data.company);
       console.log(data);
-      
+
       router.push(`/company/${data.company.companyName}`);
       toast.success("Амжилттай нэвтэрлээ!");
     } catch (error) {
@@ -50,8 +50,16 @@ export const CompanyAuthProvider = ({ children }: PropsWithChildren) => {
       toast.success("Амжилттай бүртгэгдлээ!");
       router.push(`/company/${response.data.company.companyName}`);
       return { data: response.data, status: response.status };
-    } catch (error: any) {
-      if (error?.response?.status === 409) {
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "status" in error.response &&
+        error.response.status === 409
+      ) {
         toast.error("Имэйл бүртгэлтэй байна");
       } else {
         toast.error("Бүртгэл амжилтгүй боллоо");
