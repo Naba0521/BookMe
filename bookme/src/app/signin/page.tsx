@@ -12,6 +12,7 @@ import Image from "next/image";
 import Particles from "../_components/Particles";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const ClientOnlyStars = dynamic(() => import("../signup/_components/Stars"), {
   ssr: false,
@@ -184,6 +185,14 @@ export default function SignIn() {
               {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
             </button>
           </form>
+
+          <div className="w-full flex justify-center text-sm mt-4">
+            <Link href="/user/forgotpassword">
+              <span className="text-blue-400 hover:text-white underline cursor-pointer">
+                Нууц үг сэргээх
+              </span>
+            </Link>
+          </div>
         </motion.div>
       </div>
     </div>
