@@ -10,37 +10,18 @@ const team = [
     handle: "javicodes",
   },
   {
-    name: "Munkhbayar",
+    name: "Amgalanbaatar",
     avatarUrl:
-      "https://res.cloudinary.com/dpbmpprw5/image/upload/v1750147157/Adobe_Express_-_file_x0zc7e.png",
+      "https://res.cloudinary.com/dgivvztkg/image/upload/v1754569543/IMG_0115_1_zp9cgm.jpg",
     title: "Software Engineer",
     handle: "javicodes",
   },
   {
-    name: "Bayrgun",
+    name: "Enkhzorig",
     avatarUrl:
-      "https://res.cloudinary.com/dpbmpprw5/image/upload/v1750148651/Adobe_Express_-_file_1_qwwa2s.png",
+      "https://res.cloudinary.com/dgivvztkg/image/upload/v1754569543/IMG_0115_1_zp9cgm.jpg",
     title: "Software Engineer",
     handle: "javicodes",
-  },
-  {
-    name: "Ulziinaran",
-    avatarUrl:
-      "https://res.cloudinary.com/dpbmpprw5/image/upload/v1750148717/Adobe_Express_-_file_3_lkpdwc.png",
-    title: "Software Engineer",
-    handle: "javicodes",
-  },
-  {
-    name: "Namuunaa",
-    avatarUrl:
-      "https://res.cloudinary.com/dpbmpprw5/image/upload/v1750148882/Adobe_Express_-_file_5_wpyhch.png",
-    title: "Software Engineer",
-    handle: "javicodes",
-  },
-  {
-    name: "Battsengel",
-    avatarUrl:
-      "https://res.cloudinary.com/dpbmpprw5/image/upload/v1750148776/Adobe_Express_-_file_4_mxv1ev.png",
   },
 ];
 
