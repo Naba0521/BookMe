@@ -60,7 +60,7 @@ export const LocPickerCompany = ({
     if (!existingScript) {
       const script = document.createElement("script");
       script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDlBLYHFfHDRdJ9b7B02Kg-x5VXSV6iIVA&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBUUhc8BdkQTPz6JFAXzVaDW-0ULb8DLIg&libraries=places`;
       script.async = true;
       script.defer = true;
 

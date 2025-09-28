@@ -51,7 +51,7 @@ export const LocPicker = ({ onSelect }: LocationPickerProps) => {
     if (!existingScript) {
       const script = document.createElement("script");
       script.id = "google-maps-script";
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDlBLYHFfHDRdJ9b7B02Kg-x5VXSV6iIVA&callback=initMap`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBUUhc8BdkQTPz6JFAXzVaDW-0ULb8DLIg&callback=initMap`;
       script.async = true;
       script.onload = () => {
         initMap();
