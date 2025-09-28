@@ -26,7 +26,7 @@ export const CompanyLocationEdit = ({
   useEffect(() => {
     if (typeof window !== "undefined" && mapRef.current) {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDlBLYHFfHDRdJ9b7B02Kg-x5VXSV6iIVA&callback=initMap`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBUUhc8BdkQTPz6JFAXzVaDW-0ULb8DLIg&callback=initMap`;
       script.async = true;
 
       script.onload = () => {
@@ -73,19 +73,19 @@ export const CompanyLocationEdit = ({
   };
 
   return (
-    <section className="w-full h-fit rounded-2xl p-4 flex flex-col gap-4 bg-white">
+    <section className="flex flex-col w-full gap-4 p-4 bg-white h-fit rounded-2xl">
       <div className="text-[20px] font-bold">Компаны байршил</div>
       <div className="w-full h-[500px]">
-        <div ref={mapRef} className="w-full h-full rounded-md border" />
+        <div ref={mapRef} className="w-full h-full border rounded-md" />
       </div>
 
       {/* Байршлын координатыг харуулах */}
-      <div className="w-full flex justify-between">
-        <div className="text-sm text-gray-600 flex">
+      <div className="flex justify-between w-full">
+        <div className="flex text-sm text-gray-600">
           Сонгосон байршил: {selectedPosition.lat},{selectedPosition.lng}
         </div>
 
-        <div className="w-full flex justify-end">
+        <div className="flex justify-end w-full">
           <Button onClick={handleSaveNewLocation}>Байршил хадгалах</Button>
         </div>
       </div>

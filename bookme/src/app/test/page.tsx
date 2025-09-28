@@ -53,7 +53,7 @@ export default function LocationPicker() {
     };
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDlBLYHFfHDRdJ9b7B02Kg-x5VXSV6iIVA&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBUUhc8BdkQTPz6JFAXzVaDW-0ULb8DLIg&libraries=places&callback=initMap`;
     script.async = true;
     window.initMap = initMap;
     document.head.appendChild(script);
