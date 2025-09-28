@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
 import { FullSchemaType } from "./Schemas";
 import { FormDataType } from "./Types";
-import { LocPickerCompany } from "./LocPicker";
+// import { LocPickerCompany } from "./LocPicker"; // Commented out map picker
 
 type Step5Props = {
   formData: FormDataType;
@@ -14,11 +14,12 @@ type Step5Props = {
 };
 
 export const Step5 = ({ formData, setFormData }: Step5Props) => {
-  const [location, setLocation] = useState<{
-    lat: number;
-    lng: number;
-    address: string;
-  } | null>(null);
+  // Commented out location state for map selection
+  // const [location, setLocation] = useState<{
+  //   lat: number;
+  //   lng: number;
+  //   address: string;
+  // } | null>(null);
 
   const {
     setValue,
@@ -26,44 +27,58 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
     formState: { errors },
   } = useFormContext<FullSchemaType>();
 
-  useEffect(() => {
-    if (formData.address && formData.lat && formData.lng) {
-      setLocation({
-        lat: formData.lat,
-        lng: formData.lng,
-        address: formData.address,
-      });
-    }
-  }, [formData]);
+  // Commented out useEffect for map location handling
+  // useEffect(() => {
+  //   if (formData.address && formData.lat && formData.lng) {
+  //     setLocation({
+  //       lat: formData.lat,
+  //       lng: formData.lng,
+  //       address: formData.address,
+  //     });
+  //   }
+  // }, [formData]);
 
-  const handleLocationSelect = (loc: {
-    lat: number;
-    lng: number;
-    address: string;
-  }) => {
-    setLocation(loc);
+  // Commented out map location selection handler
+  // const handleLocationSelect = (loc: {
+  //   lat: number;
+  //   lng: number;
+  //   address: string;
+  // }) => {
+  //   setLocation(loc);
 
-    setValue("address", loc.address, { shouldValidate: true });
-    setValue("city", "Улаанбаатар", { shouldValidate: true });
-    setValue("lat", loc.lat);
-    setValue("lng", loc.lng);
+  //   setValue("address", loc.address, { shouldValidate: true });
+  //   setValue("city", "Улаанбаатар", { shouldValidate: true });
+  //   setValue("lat", loc.lat);
+  //   setValue("lng", loc.lng);
 
-    trigger(["address", "city", "lat", "lng"]);
+  //   trigger(["address", "city", "lat", "lng"]);
+
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     address: loc.address,
+  //     lat: loc.lat,
+  //     lng: loc.lng,
+  //     city: "Улаанбаатар",
+  //   }));
+  // };
+
+  // New handler for manual address input
+  const handleAddressChange = (field: "address" | "city", value: string) => {
+    setValue(field, value, { shouldValidate: true });
+    trigger([field]);
 
     setFormData((prev) => ({
       ...prev,
-      address: loc.address,
-      lat: loc.lat,
-      lng: loc.lng,
-      city: "Улаанбаатар",
+      [field]: value,
     }));
   };
 
   return (
-    <div className="space-y-6 text-white p-6 rounded-lg max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-2">Байршлын мэдээлэл</h2>
+    <div className="max-w-2xl p-6 mx-auto space-y-6 text-white rounded-lg">
+      <h2 className="mb-2 text-xl font-bold">Байршлын мэдээлэл</h2>
 
-      <div>
+      {/* Commented out map picker section */}
+      {/* <div>
         <Label className="block mb-2 text-white">Хаяг сонгох *</Label>
         <div
           className={`bg-white/5 rounded-lg p-3 border ${
@@ -85,13 +100,13 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
         </div>
 
         {errors.address && !location && (
-          <p className="text-red-400 text-sm mt-1">
+          <p className="mt-1 text-sm text-red-400">
             {errors.address.message || "Хаяг сонгох шаардлагатай"}
           </p>
         )}
-      </div>
+      </div> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label htmlFor="address" className="block mb-2 text-white">
             Хаяг *
@@ -99,12 +114,12 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
           <Input
             id="address"
             value={formData.address}
-            readOnly
-            className="bg-white/10 text-white border-white/30 focus:border-white/50 cursor-default"
-            placeholder="Хаяг сонгосны дараа харагдана"
+            onChange={(e) => handleAddressChange("address", e.target.value)}
+            className="text-white bg-white/10 border-white/30 focus:border-white/50"
+            placeholder="Хаягаа оруулна уу"
           />
           {errors.address && (
-            <p className="text-red-400 text-sm mt-1">
+            <p className="mt-1 text-sm text-red-400">
               {errors.address.message}
             </p>
           )}
@@ -117,12 +132,12 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
           <Input
             id="city"
             value={formData.city}
-            readOnly
-            className="bg-white/10 text-white border-white/30 focus:border-white/50 cursor-default"
-            placeholder="Автоматаар бөглөгдөнө"
+            onChange={(e) => handleAddressChange("city", e.target.value)}
+            className="text-white bg-white/10 border-white/30 focus:border-white/50"
+            placeholder="Хотын нэр оруулна уу"
           />
           {errors.city && (
-            <p className="text-red-400 text-sm mt-1">{errors.city.message}</p>
+            <p className="mt-1 text-sm text-red-400">{errors.city.message}</p>
           )}
         </div>
       </div>
