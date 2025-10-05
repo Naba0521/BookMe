@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Company } from "../../../models/company.schema";
 import nodemailer from "nodemailer";
+import { log } from "console";
 export const signupCompanyController: RequestHandler = async (req, res) => {
   try {
     const {
@@ -33,6 +34,7 @@ export const signupCompanyController: RequestHandler = async (req, res) => {
     }
 
     const existing = await Company.findOne({ email });
+    
     if (existing) {
       res.status(409).json({ message: "Имэйл бүртгэлтэй байна" });
       return;
@@ -94,6 +96,8 @@ export const signupCompanyController: RequestHandler = async (req, res) => {
       token,
       company,
     });
+    console.log("success");
+    
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({
