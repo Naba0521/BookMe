@@ -22,7 +22,7 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
 
   const {
     setValue,
-    trigger,
+    trigger, 
     formState: { errors },
   } = useFormContext<FullSchemaType>();
 
@@ -59,16 +59,45 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
     }));
   };
 
+  const handleChangeLocation = () => {
+    setLocation(null);
+    setValue("address", "", { shouldValidate: true });
+    setValue("city", "", { shouldValidate: true });
+    setValue("lat", undefined);
+    setValue("lng", undefined);
+    
+    setFormData((prev) => ({
+      ...prev,
+      address: "",
+      lat: undefined,
+      lng: undefined,
+      city: "",
+    }));
+  };
+
   return (
     <div className="max-w-2xl p-6 mx-auto space-y-6 text-white rounded-lg">
       <h2 className="mb-2 text-xl font-bold">Байршлын мэдээлэл</h2>
 
       <div>
-        <Label className="block mb-2 text-white">Хаяг сонгох *</Label>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="block text-white">Хаяг сонгох <span className="text-red-500 text-[24px]">*</span></Label>
+          {location && (
+            <button
+              type="button"
+              onClick={handleChangeLocation}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+            >
+              <span>📍</span>
+              Хаяг солих
+            </button>
+          )}
+        </div>
+
         <div
-          className={`bg-white/5 rounded-lg p-3 border ${
+          className={`bg-white/5 rounded-lg p-3 border transition-colors duration-200 ${
             errors.address ? "border-red-500" : "border-white/20"
-          }`}
+          } ${location ? "ring-2 ring-blue-500/30" : ""}`}
         >
           <LocPickerCompany
             onSelect={handleLocationSelect}
@@ -84,17 +113,24 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
           />
         </div>
 
-        {errors.address && !location && (
+        {location && (
+          <div className="mt-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <p className="text-sm text-green-400 font-medium">✅ Хаяг сонгогдлоо</p>
+            <p className="text-xs text-green-300 mt-1">{location.address}</p>
+          </div>
+        )}
+
+        {/* {errors.address && !location && (
           <p className="mt-1 text-sm text-red-400">
             {errors.address.message || "Хаяг сонгох шаардлагатай"}
           </p>
-        )}
+        )} */}
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label htmlFor="address" className="block mb-2 text-white">
-            Хаяг <span className="text-red-500">*</span>
+            Хаяг
           </Label>
           <Input
             id="address"
@@ -103,16 +139,16 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
             className="text-white cursor-default bg-white/10 border-white/30 focus:border-white/50"
             placeholder="Хаяг сонгосны дараа харагдана"
           />
-          {errors.address && (
+          {/* {errors.address && (
             <p className="mt-1 text-sm text-red-400">
               {errors.address.message}
             </p>
-          )}
+          )} */}
         </div>
 
         <div>
           <Label htmlFor="city" className="block mb-2 text-white">
-            Хот <span className="text-red-500">*</span>
+            Хот
           </Label>
           <Input
             id="city"
@@ -121,9 +157,9 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
             className="text-white cursor-default bg-white/10 border-white/30 focus:border-white/50"
             placeholder="Автоматаар бөглөгдөнө"
           />
-          {errors.city && (
+          {/* {errors.city && (
             <p className="mt-1 text-sm text-red-400">{errors.city.message}</p>
-          )}
+          )} */}
         </div>
       </div>
     </div>

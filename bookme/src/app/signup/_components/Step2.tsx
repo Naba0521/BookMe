@@ -37,18 +37,18 @@ export const Step2 = () => {
       </div>
 
       <div>
-        <Label htmlFor="phone" className="block mb-2 text-white">
-          Утас *
+        <Label htmlFor="phoneNumber" className="block mb-2 text-white">
+          Утас <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <Input
-          {...register("phone")}
-          id="phone"
+          {...register("phoneNumber")}
+          id="phoneNumber"
           type="tel"
           className="bg-white/10 text-white border-white/30 placeholder-white/70 focus:border-white/50 focus:ring-white/20 placeholder-text-white"
           placeholder="9911 2233"
         />
-        {errors.phone && (
-          <p className="text-red-400 text-sm mt-1">{errors.phone.message}</p>
+        {errors.phoneNumber && (
+          <p className="text-red-400 text-sm mt-1">{errors.phoneNumber.message}</p>
         )}
       </div>
 

@@ -15,6 +15,7 @@ export const step1Schema = z.object({
   password: z.string().min(8, "Нууц үг дор хаяж 8 тэмдэгт байх ёстой"),
   confirmPassword: z.string(),
   companyName: z.string().min(2, "Компаний нэр дор хаяж 2 тэмдэгт байх ёстой"),
+  templateNumber: z.number().default(0),
 });
 
 //
@@ -22,9 +23,9 @@ export const step1Schema = z.object({
 //
 export const step2Schema = z.object({
   description: z.string().optional(),
-  phone: z.string().min(8, "Утасны дугаар дор хаяж 8 тэмдэгт байх ёстой"),
-  experience: z.string().min(1, "Ажилласан жилээ оруулна уу"),
-  clientNumber: z.string().min(1, "Үйлчлүүлэгчдийн тоог оруулна уу"),
+  phoneNumber: z.string().min(8, "Утасны дугаар дор хаяж 8 тэмдэгт байх ёстой"),
+  experience: z.string().optional(),
+  clientNumber: z.string().optional(),
 });
 
 //
@@ -50,7 +51,8 @@ export const step3Schema = z.object({
 // STEP 4
 //
 export const step4Schema = z.object({
-  logo: z.string().optional(),
+  companyLogo: z.string().optional(),
+  companyImages: z.array(z.string()).optional(),
   website: z.string().optional(),
   aboutUsImage: z.string().optional(),
   backGroundImage: z.string().optional(),
@@ -58,9 +60,14 @@ export const step4Schema = z.object({
 
 export const step5Schema = z.object({
   address: z.string().min(5, "Хаяг дор хаяж 5 тэмдэгт байх ёстой"),
-  city: z.string().min(2, "Хотын нэр дор хаяж 2 тэмдэгт байх ёстой"),
-  lat: z.number().optional(), // ✅ Add this
-  lng: z.number().optional(), // ✅ Add this
+  addressDetailed: z.string().optional(),
+  city: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  isActive: z.boolean().optional(),
+  employees: z.array(z.string()).optional(),
+  bookings: z.array(z.string()).optional(),
+  users: z.array(z.string()).optional(),
 });
 
 //

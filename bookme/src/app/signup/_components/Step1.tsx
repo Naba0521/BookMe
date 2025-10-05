@@ -18,7 +18,7 @@ export const Step1 = () => {
       <h2 className="text-xl font-bold mb-5">Бүртгэлийн мэдээлэл</h2>
       <div>
         <Label htmlFor="email" className="mb-2">
-          Имэйл хаягаа оруулна уу  <span className="text-red-500">*</span>
+          Имэйл хаягаа оруулна уу  <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <Input
           {...register("email")}
@@ -32,7 +32,7 @@ export const Step1 = () => {
       </div>
       <div>
         <Label htmlFor="password" className="mb-2">
-          Нууц үгээ оруулна уу <span className="text-red-500">*</span>
+          Нууц үгээ оруулна уу <span className="text-red-500 text-[24px]  " >*</span>
         </Label>
         <Input
           {...register("password")}
@@ -47,7 +47,7 @@ export const Step1 = () => {
 
       <div>
         <Label htmlFor="confirmPassword" className="mb-2">
-          Нууц үгээ давтаж оруулна уу <span className="text-red-500">*</span>
+          Нууц үгээ давтаж оруулна уу <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <Input
           {...register("confirmPassword")}
@@ -64,7 +64,7 @@ export const Step1 = () => {
 
       <div>
         <Label htmlFor="companyName" className="mb-1">
-          Компаний нэр <span className="text-red-500">*</span>
+          Компаний нэр <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <p className="text-[#A9A9A9] text-[13px] mb-2">Латинаар бичнэ үү</p>
         <Input
