@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Stepper, { Step } from "@/blocks/Components/Stepper/Stepper";
 import { Step6 } from "./_components/Step6";
@@ -36,17 +36,22 @@ export default function CompanySetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signUp } = useCompanyAuth();
 
+  // Refs to store current blob URLs for cleanup
+  const companyImagePreviewRef = useRef<string[]>([]);
+  const logoPreviewRef = useRef<string>("");
+
   const formData: FormDataType = {
     email: "",
     password: "",
     confirmPassword: "",
     companyName: "",
+    templateNumber: 0 as number,
     description: "",
     address: "",
     city: "",
-    phone: "",
+    phoneNumber: "",
     website: "",
-    logo: "",
+    companyLogo: "",
     openingHours: {
       monday: { open: "09:00", close: "18:00", closed: false },
       tuesday: { open: "09:00", close: "18:00", closed: false },
@@ -67,23 +72,36 @@ export default function CompanySetupPage() {
   };
 
   const methods = useForm<FullSchemaType>({
-    resolver: zodResolver(fullSchema),
+    resolver: zodResolver(fullSchema) as any,
     mode: "onChange",
-    defaultValues: formData,
+    defaultValues: formData as any,
   });
 
+  // Update refs when state changes
+  useEffect(() => {
+    companyImagePreviewRef.current = companyImagePreview;
+  }, [companyImagePreview]);
+
+  useEffect(() => {
+    logoPreviewRef.current = logoPreview;
+  }, [logoPreview]);
+
+  // Cleanup blob URLs only when component unmounts
   useEffect(() => {
     return () => {
-      companyImagePreview.forEach((url) => {
+      // Clean up company image blob URLs
+      companyImagePreviewRef.current.forEach((url) => {
         if (url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
       });
-      if (logoPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(logoPreview);
+      // Clean up logo blob URL
+      if (logoPreviewRef.current.startsWith("blob:")) {
+        URL.revokeObjectURL(logoPreviewRef.current);
       }
     };
-  }, [companyImagePreview, logoPreview]);
+  }, []); // Empty dependency array - only run on mount/unmount
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -104,7 +122,7 @@ export default function CompanySetupPage() {
       setLogoFile(file);
       const preview = URL.createObjectURL(file);
       setLogoPreview(preview);
-      methods.setValue("logo", preview);
+      methods.setValue("companyLogo", preview);
     }
   };
 
@@ -155,11 +173,11 @@ export default function CompanySetupPage() {
         password: values.password,
         companyName: capitalizeWords(values.companyName),
         address: values.address,
-        city: values.city,
+        city: values.city || "",
         lat: values.lat,
         lng: values.lng,
         companyLogo: logoUrl,
-        phoneNumber: values.phone,
+        phoneNumber: values.phoneNumber,
         description: values.description ?? "",
         companyImages: imageUrls,
         employees: [],
@@ -170,6 +188,7 @@ export default function CompanySetupPage() {
         backGroundImage: values.backGroundImage,
         clientNumber: values.clientNumber,
         experience: values.experience,
+        templateNumber: values.templateNumber || 0,
       };
 
       console.log("Илгээж буй өгөгдөл:", apiData);
@@ -203,7 +222,7 @@ export default function CompanySetupPage() {
 
     setLogoFile(null);
     setLogoPreview("");
-    methods.setValue("logo", "");
+    methods.setValue("companyLogo", "");
   };
 
   const dayLabels: Record<string, string> = {
@@ -379,20 +398,20 @@ export default function CompanySetupPage() {
             }}
           >
             <FormProvider {...methods}>
-              <StepperWithValidation
-                currentStep={currentStep}
-                setCurrentStep={setCurrentStep}
-                handleFinalSubmit={handleFinalSubmit}
-                isSubmitting={isSubmitting}
-                dayLabels={dayLabels}
-                formData={formData}
-                handleImageChange={handleImageChange}
-                companyImagePreview={companyImagePreview}
-                removeCompanyImage={removeCompanyImage}
-                handleLogoChange={handleLogoChange}
-                logoPreview={logoPreview}
-                removeLogo={removeLogo}
-              />
+            <StepperWithValidation
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              handleFinalSubmit={handleFinalSubmit}
+              isSubmitting={isSubmitting}
+              dayLabels={dayLabels}
+              formData={formData}
+              handleImageChange={handleImageChange}
+              companyImagePreview={companyImagePreview}
+              removeCompanyImage={removeCompanyImage}
+              handleLogoChange={handleLogoChange}
+              logoPreview={logoPreview}
+              removeLogo={removeLogo}
+            />
             </FormProvider>
           </motion.div>
         </motion.div>

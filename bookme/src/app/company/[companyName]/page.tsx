@@ -39,8 +39,8 @@ export default function CompanyTemplateSelector() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-12 h-12 border-t-2 border-b-2 border-purple-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function CompanyTemplateSelector() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md">
+        <div className="relative max-w-md px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded">
           <strong className="font-bold">Анхаар!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
@@ -64,7 +64,7 @@ export default function CompanyTemplateSelector() {
 
   if (!company) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex items-center justify-center h-screen">
         <p>Компаний мэдээлэл олдсонгүй</p>
       </div>
     );
@@ -79,7 +79,9 @@ export default function CompanyTemplateSelector() {
       {templateNumber === 2 && (
         <Template2 data={company} companyName={companyName} />
       )}
-      {templateNumber === 3 && <Template3 data={company} />}
+      {templateNumber === 3 && (
+        <Template3 data={company} companyName={companyName} />
+      )}
     </div>
   );
 }

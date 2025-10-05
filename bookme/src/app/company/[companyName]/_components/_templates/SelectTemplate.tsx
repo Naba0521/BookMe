@@ -114,8 +114,8 @@ export const SelectTemplate = ({ fetchCompany }: any) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-12 h-12 border-t-2 border-b-2 border-purple-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -123,7 +123,7 @@ export const SelectTemplate = ({ fetchCompany }: any) => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md">
+        <div className="relative max-w-md px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded">
           <strong className="font-bold">Анхаар!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
@@ -138,33 +138,55 @@ export const SelectTemplate = ({ fetchCompany }: any) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 m-auto">
-        <div className="max-w-7xl mx-auto">
+      <div className="px-6 py-4 m-auto bg-white border-b border-gray-200">
+        <div className="mx-auto max-w-7xl">
           <h1 className="text-2xl font-bold text-gray-900">
             {company?.companyName} - Дизайн сонгох хэсэг
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Та бизнестээ тохирох дизайныг сонгоно уу!
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 flex flex-col gap-5">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+      <div className="p-6 mx-auto max-w-7xl">
+        {/* Navigation and Template Info */}
+        <div className="mb-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+            {/* 1. Template Info */}
+            <div className="flex items-center flex-1 gap-3">
+              <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+                <Star className="text-blue-600" size={16} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {currentTemplate.name}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {currentTemplate.description}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Navigation Controls */}
+            <div className="flex items-center justify-center flex-1 gap-4">
               <Button
                 variant="outline"
                 onClick={goToPrevTemplate}
                 disabled={currentTemplateIndex === 0}
                 size="sm"
                 aria-label="Previous template"
+                className="flex items-center gap-2"
               >
                 <ChevronLeft size={16} />
+                Өмнөх
               </Button>
-              <span className="text-sm text-gray-500">
-                Дизайн {currentTemplateIndex + 1} / {templates.length}
-              </span>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">
+                  Дизайн {currentTemplateIndex + 1} / {templates.length}
+                </span>
+              </div>
 
               <Button
                 variant="outline"
@@ -172,61 +194,54 @@ export const SelectTemplate = ({ fetchCompany }: any) => {
                 disabled={currentTemplateIndex === templates.length - 1}
                 size="sm"
                 aria-label="Next template"
+                className="flex items-center gap-2"
               >
+                Дараах
                 <ChevronRight size={16} />
+              </Button>
+            </div>
+
+            {/* 3. Select Button */}
+            <div className="flex justify-center flex-1 lg:justify-end">
+              <Button
+                onClick={handleSaveTemplate}
+                disabled={saving}
+                className="bg-blue-600 cursor-pointer hover:bg-blue-700"
+                size="sm"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-3 h-3 mr-2 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
+                    Хадгалж байна...
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} className="mr-2" />
+                    Энэ дизайныг сонгох
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
-          <div className="w-full order-2 lg:order-1">
-            <div className="bg-white rounded-lg p-4 border border-gray-200 relative">
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Урьдчилан харах
-              </h3>
-              <div className="border rounded-lg overflow-hidden h-[600px]">
-                <div className="h-full w-full overflow-auto flex justify-center">
+        {/* Template Preview */}
+        <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Урьдчилан харах
+            </h3>
+            <p className="text-sm text-gray-600">
+              Сонгосон дизайныг эндээс урьдчилан харж болно
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="overflow-hidden border border-gray-200 rounded-lg bg-gray-50">
+              <div className="max-h-[70vh] overflow-auto">
+                <div className="flex justify-center">
                   {renderTemplatePreview(false)}
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <div className="bg-white rounded-lg p-6 border border-gray-200 h-fit">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Star className="text-black-600" size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {currentTemplate.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {currentTemplate.description}
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleSaveTemplate}
-                disabled={saving}
-                className="w-full flex items-center justify-center gap-2"
-                size="lg"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                    Хадгалж байна...
-                  </>
-                ) : (
-                  <>
-                    <Check size={16} />
-                    Энэ дизайныг сонгох
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </div>
