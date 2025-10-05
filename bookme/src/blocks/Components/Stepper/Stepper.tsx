@@ -28,6 +28,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
     currentStep: number;
     onStepClick: (clicked: number) => void;
   }) => ReactNode;
+  isCurrentStepValid?: boolean;
 }
 
 export default function Stepper({
@@ -43,8 +44,10 @@ export default function Stepper({
   nextButtonProps = {},
   backButtonText = "Back",
   nextButtonText = "Continue",
+  disabled = false,
   disableStepIndicators = false,
   renderStepIndicator,
+  isCurrentStepValid = true,
   ...rest
 }: StepperProps) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
@@ -85,6 +88,9 @@ export default function Stepper({
   return (
     <div
       className="flex min-h-full flex-1 flex-col items-center justify-center p-4 text-white"
+      style={{
+        contain: "layout style",
+      }}
       {...rest}
     >
       <div
@@ -154,10 +160,15 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="duration-350 flex items-center justify-center rounded-full bg-[#007FFF] py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-[#339CFF] active:bg-[#005FCC]"
+                disabled={!isCurrentStepValid || disabled}
+                className={`duration-350 flex items-center justify-center rounded-full py-1.5 px-3.5 font-medium tracking-tight text-white transition ${
+                  !isCurrentStepValid || disabled
+                    ? "bg-gray-500 cursor-not-allowed opacity-50"
+                    : "bg-[#007FFF] hover:bg-[#339CFF] active:bg-[#005FCC]"
+                }`}
                 {...nextButtonProps}
               >
-                {isLastStep ? "Complete" : nextButtonText}
+                {isLastStep ? "Дуусгах" : nextButtonText}
               </button>
             </div>
           </div>
@@ -213,9 +224,16 @@ function SlideTransition({
   onHeightReady: (h: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const heightRef = useRef<number>(0);
+  
   useLayoutEffect(() => {
     if (containerRef.current) {
-      onHeightReady(containerRef.current.offsetHeight);
+      const newHeight = containerRef.current.offsetHeight;
+      // Only trigger height change if significantly different to prevent micro-adjustments
+      if (Math.abs(newHeight - heightRef.current) > 5) {
+        heightRef.current = newHeight;
+        onHeightReady(newHeight);
+      }
     }
   }, [children, onHeightReady]);
   return (
