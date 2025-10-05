@@ -109,7 +109,7 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label htmlFor="address" className="block mb-2 text-white">
-            Хаяг *
+            Хаяг <span className="text-red-500">*</span>
           </Label>
           <Input
             id="address"
@@ -127,7 +127,7 @@ export const Step5 = ({ formData, setFormData }: Step5Props) => {
 
         <div>
           <Label htmlFor="city" className="block mb-2 text-white">
-            Хот *
+            Хот <span className="text-red-500">*</span>
           </Label>
           <Input
             id="city"

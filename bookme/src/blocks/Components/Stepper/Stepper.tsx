@@ -168,7 +168,7 @@ export default function Stepper({
                 }`}
                 {...nextButtonProps}
               >
-                {isLastStep ? "Complete" : nextButtonText}
+                {isLastStep ? "Дуусгах" : nextButtonText}
               </button>
             </div>
           </div>

@@ -220,12 +220,16 @@ export default function CompanySetupPage() {
     <>
       <style jsx global>{`
         @keyframes earthRotate {
-          from {
+          0% {
             transform: rotate(0deg) translateZ(0);
           }
-          to {
+          100% {
             transform: rotate(360deg) translateZ(0);
           }
+        }
+        .earth-rotation {
+          animation: earthRotate 60s linear infinite !important;
+          animation-play-state: running !important;
         }
       `}</style>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
@@ -284,11 +288,10 @@ export default function CompanySetupPage() {
               src="https://res.cloudinary.com/dpbmpprw5/image/upload/q_auto,f_auto/v1750157865/earth_Large_rwbjag.png"
               alt="Earth"
               priority
-              className="object-contain opacity-80 pointer-events-none w-full h-full"
+              className="object-contain opacity-80 pointer-events-none w-full h-full earth-rotation"
               style={{
                 willChange: "transform",
                 transform: "translateZ(0)",
-                animation: "earthRotate 60s linear infinite",
               }}
               quality={80}
               unoptimized={false}

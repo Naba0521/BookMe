@@ -52,7 +52,7 @@ export const StepperWithValidation = ({
       }}
       onFinalStepCompleted={handleFinalSubmit}
       backButtonText="Буцах"
-      nextButtonText={isSubmitting ? "Илгээж байна..." : "Дараах"}
+      nextButtonText={isSubmitting ? "Илгээж байна..." : "Дуусгах"}
       disabled={isSubmitting}
       isCurrentStepValid={isValid}
     >

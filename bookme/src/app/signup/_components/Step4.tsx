@@ -168,7 +168,7 @@ export const Step4 = ({
     <>
       {/* Logo */}
       <div>
-        <Label className="block mb-2 text-white font-medium">Компаний лого *</Label>
+        <Label className="block mb-2 text-white font-medium">Компаний лого <span className="text-red-500">*</span></Label>
         <p className="text-xs text-white/60 mb-3">Лого зурагаа сонгоно уу</p>
         <div 
           className={`border-2 border-dashed rounded-lg p-6 transition-all duration-200 ${
@@ -270,7 +270,7 @@ export const Step4 = ({
       {/* Background Image */}
       <div>
         <Label className="block mb-2 text-white mt-6 font-medium">
-          Компаний background зураг *
+          Компаний background зураг <span className="text-red-500">*</span>
         </Label>
         <p className="text-xs text-white/60 mb-3">16:9 харьцаатай өргөн зураг сонгоно уу (жишээ: 1920x1080)</p>
         <div 
