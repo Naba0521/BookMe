@@ -14,11 +14,13 @@ import Link from "next/link";
 
 interface MinimalTemplateProps {
   data: Company;
+  companyName: string;
   isPreview?: boolean;
 }
 
 export const Template3: React.FC<MinimalTemplateProps> = ({
   data,
+  companyName,
   isPreview = false,
 }) => {
   const { company: loggedInCompany } = useCompanyAuth();
@@ -191,7 +193,7 @@ export const Template3: React.FC<MinimalTemplateProps> = ({
                     </p>
                     <div className="flex flex-col justify-center gap-4 sm:flex-row">
                       <a
-                        href={`/company/${data.companyName}/dashboard`}
+                        href={`/company/${companyName}/dashboard`}
                         className="inline-flex items-center px-6 py-3 font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
                       >
                         <svg
