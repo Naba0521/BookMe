@@ -114,10 +114,10 @@ export const EditCompanyBasicInfo = () => {
           </div>
           <div className="flex justify-between w-full gap-3 h-fit">
             <div className="grid w-full gap-2">
-              <Label htmlFor="client-number">Нийт ажилтан</Label>
+              <Label htmlFor="total-employees">Нийт ажилтан</Label>
               <Input
                 disabled
-                id="booking-number"
+                id="total-employees"
                 type="number"
                 placeholder="Enter client count"
                 defaultValue={`${company.employees.length}`}
