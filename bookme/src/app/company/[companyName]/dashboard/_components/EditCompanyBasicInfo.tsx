@@ -39,12 +39,12 @@ export const EditCompanyBasicInfo = () => {
         totalBookings: company.bookings.length,
       });
     }
-  }, []);
+  }, [company]);
 
   const handleChangeBasicInfo = async () => {
     setLoading(true);
     try {
-      const updateData = await api.put(`/company/${company?._id}`, {
+      await api.put(`/company/${company?._id}`, {
         companyName: updatedCompany.companyName,
         description: updatedCompany.description,
         experience: updatedCompany.experience,
@@ -82,7 +82,7 @@ export const EditCompanyBasicInfo = () => {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="company-description">Description</Label>
+          <Label htmlFor="company-description">Компаний танилцуулга</Label>
           <Textarea
             id="company-description"
             placeholder="Enter company description"
@@ -97,7 +97,7 @@ export const EditCompanyBasicInfo = () => {
           />
         </div>
         <div className="flex gap-5">
-          <div className="grid gap-2 w-full">
+          <div className="grid w-full gap-2">
             <Label htmlFor="experience">Ажлын туршлага (жилээр)</Label>
             <Input
               id="experience"
@@ -112,8 +112,8 @@ export const EditCompanyBasicInfo = () => {
               }
             />
           </div>
-          <div className="w-full h-fit flex justify-between gap-3">
-            <div className="grid gap-2 w-full">
+          <div className="flex justify-between w-full gap-3 h-fit">
+            <div className="grid w-full gap-2">
               <Label htmlFor="client-number">Нийт ажилтан</Label>
               <Input
                 disabled
@@ -131,7 +131,7 @@ export const EditCompanyBasicInfo = () => {
           className="bg-[#007FFF] hover:bg-[#007FFF]/90"
           onClick={handleChangeBasicInfo}
         >
-          <Save className="mr-2 h-4 w-4" />
+          <Save className="w-4 h-4 mr-2" />
           {loading ? <LoadingSvg /> : "Хадгалах"}
         </Button>
       </div>

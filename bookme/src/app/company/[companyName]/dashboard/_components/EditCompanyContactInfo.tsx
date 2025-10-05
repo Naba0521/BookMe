@@ -33,12 +33,12 @@ export const EditCompanyContactInfo = () => {
         address: company.address || "",
       });
     }
-  }, []);
+  }, [company]);
 
   const handleChangeContactInfo = async () => {
     setLoading(true);
     try {
-      const updateData = await api.put(`/company/${company?._id}`, {
+      await api.put(`/company/${company?._id}`, {
         email: updatedCompany.email,
         phoneNumber: updatedCompany.phoneNumber,
         address: updatedCompany.address,
@@ -60,7 +60,7 @@ export const EditCompanyContactInfo = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">Email хаяг</Label>
           <Input
             id="email"
             type="email"
@@ -75,7 +75,7 @@ export const EditCompanyContactInfo = () => {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="phone">Phone Number</Label>
+          <Label htmlFor="phone">Утасны дугаар</Label>
           <Input
             id="phone"
             type="tel"
@@ -90,10 +90,10 @@ export const EditCompanyContactInfo = () => {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="adress">Хаяг</Label>
+          <Label htmlFor="address">Хаяг</Label>
           <Input
             id="address"
-            placeholder="Enter website URL"
+            placeholder="Enter address"
             defaultValue={`${updatedCompany.address}`}
             onChange={(e) =>
               setUpdatedCompany((prev) => ({
@@ -110,7 +110,7 @@ export const EditCompanyContactInfo = () => {
             id="website"
             type="url"
             placeholder="Enter website URL"
-            defaultValue={`http://localhost:3000/company/${company?.companyName}`}
+            defaultValue={`https://book-me-seven-sigma.vercel.app/company/${company?.companyName}`}
           />
         </div>
       </CardContent>
@@ -119,7 +119,7 @@ export const EditCompanyContactInfo = () => {
           className="bg-[#007FFF] hover:bg-[#007FFF]/90"
           onClick={handleChangeContactInfo}
         >
-          <Save className="mr-2 h-4 w-4" />
+          <Save className="w-4 h-4 mr-2" />
           {loading ? <LoadingSvg /> : "Хадгалах"}
         </Button>
       </div>
