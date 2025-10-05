@@ -112,7 +112,7 @@ export const Template3: React.FC<MinimalTemplateProps> = ({
           </h1>
 
           <p className="mb-6 leading-relaxed text-gray-600">
-            company.description
+            {data.description}
           </p>
 
           <div className="mb-6 space-y-3">
