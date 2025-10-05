@@ -232,7 +232,7 @@ export const EmployeeCard = ({ employee, getCompanyAction }: PropsType) => {
             ></Textarea>
           </div>
 
-          <div className="w-full flex justify-end gap-3">
+          <div className="flex justify-center gap-1">
             <EmployeeEditButton
               employeeId={employee._id}
               employeeName={employee.employeeName}
