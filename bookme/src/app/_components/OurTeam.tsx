@@ -12,14 +12,22 @@ const team = [
   {
     name: "Amgalanbaatar",
     avatarUrl:
-      "https://res.cloudinary.com/dgivvztkg/image/upload/v1754569543/IMG_0115_1_zp9cgm.jpg",
+      "https://res.cloudinary.com/dgivvztkg/image/upload/v1759651540/55536417_2187142741404167_7923531671125622784_n_oubykv.jpg",
     title: "Software Engineer",
+
     handle: "javicodes",
   },
   {
     name: "Enkhzorig",
     avatarUrl:
-      "https://res.cloudinary.com/dgivvztkg/image/upload/v1754569543/IMG_0115_1_zp9cgm.jpg",
+      "https://res.cloudinary.com/dgivvztkg/image/upload/v1759651361/508153870_3970914746506009_3136107645377295796_n_lbidoo.jpg",
+    title: "Software Engineer",
+    handle: "javicodes",
+  },
+  {
+    name: "Coco Gerlee",
+    avatarUrl:
+      "https://res.cloudinary.com/dgivvztkg/image/upload/v1759651462/279795180_679329246619047_4175161691654145742_n_dmdzzp.jpg",
     title: "Software Engineer",
     handle: "javicodes",
   },
