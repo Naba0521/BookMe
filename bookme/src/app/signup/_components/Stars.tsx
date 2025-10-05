@@ -7,7 +7,7 @@ export default function ClientOnlyStars() {
 
   return (
     <div className="absolute inset-0 z-2">
-      {[...Array(300)].map((_, i) => {
+      {[...Array(150)].map((_, i) => {
         const size = Math.random() * 3 + 1;
         return (
           <motion.div

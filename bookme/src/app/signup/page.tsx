@@ -16,6 +16,7 @@ import { Step4 } from "./_components/Step4";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { fullSchema, FullSchemaType } from "./_components/Schemas";
+import { StepperWithValidation } from "./_components/StepperWithValidation";
 import Image from "next/image";
 import Particles from "../_components/Particles";
 import dynamic from "next/dynamic";
@@ -216,7 +217,22 @@ export default function CompanySetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+    <>
+      <style jsx global>{`
+        @keyframes earthRotate {
+          0% {
+            transform: rotate(0deg) translateZ(0);
+          }
+          100% {
+            transform: rotate(360deg) translateZ(0);
+          }
+        }
+        .earth-rotation {
+          animation: earthRotate 60s linear infinite !important;
+          animation-play-state: running !important;
+        }
+      `}</style>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
       {/* Enhanced Background with Earth and Particles */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Animated gradient orbs */}
@@ -228,7 +244,7 @@ export default function CompanySetupPage() {
             scale: [1, 1.1, 1],
           }}
           transition={{
-            duration: 8,
+            duration: 12,
             repeat: Infinity,
             repeatType: "reverse",
           }}
@@ -247,16 +263,23 @@ export default function CompanySetupPage() {
           }}
         />
 
-        {/* Earth in bottom-left corner - Large and behind form */}
-        <div className="absolute bottom-0 left-0 w-[1400px] h-[900px] overflow-hidden z-0">
-          <motion.div
+        {/* Earth in bottom-left corner - Completely isolated animation layer */}
+        <div 
+          className="fixed bottom-0 left-0 w-[1400px] h-[900px] overflow-hidden z-0"
+          style={{
+            willChange: "transform",
+            contain: "strict",
+            isolation: "isolate",
+            transform: "translateZ(0)",
+          }}
+        >
+          <div
             className="absolute -bottom-64 -left-64 w-[1400px] h-[900px]"
-            initial={{ rotate: 0 }}
-            animate={{ rotate: 360 }}
-            transition={{
-              duration: 60,
-              repeat: Infinity,
-              ease: "linear",
+            style={{
+              willChange: "transform",
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
+              perspective: "1000px",
             }}
           >
             <Image
@@ -265,15 +288,15 @@ export default function CompanySetupPage() {
               src="https://res.cloudinary.com/dpbmpprw5/image/upload/q_auto,f_auto/v1750157865/earth_Large_rwbjag.png"
               alt="Earth"
               priority
-              className="object-contain opacity-80 pointer-events-none w-full h-full"
+              className="object-contain opacity-80 pointer-events-none w-full h-full earth-rotation"
               style={{
-                filter:
-                  "drop-shadow(0 0 120px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 60px rgba(139, 92, 246, 0.3))",
+                willChange: "transform",
+                transform: "translateZ(0)",
               }}
               quality={80}
               unoptimized={false}
             />
-          </motion.div>
+          </div>
         </div>
 
         {/* Global Particles - More white particles */}
@@ -288,18 +311,23 @@ export default function CompanySetupPage() {
             "#e0e7ff",
             "#f3f4f6",
           ]}
-          particleCount={400}
+          particleCount={100}
           particleSpread={120}
+          speed={0.008}
           cameraDistance={200}
           particleBaseSize={1.5}
           sizeRandomness={1.2}
-          speed={0.015}
         />
 
         <ClientOnlyStars />
       </div>
 
-      <div className="relative z-20 flex items-center justify-center min-h-screen p-4">
+      <div 
+        className="relative z-20 flex items-center justify-center min-h-screen p-4"
+        style={{
+          contain: "layout style",
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -347,64 +375,24 @@ export default function CompanySetupPage() {
                 "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
               boxShadow:
                 "0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+              contain: "layout style paint",
             }}
           >
             <FormProvider {...methods}>
-              <Stepper
-                initialStep={1}
-                onStepChange={(step) => {
-                  setCurrentStep(step);
-                }}
-                onFinalStepCompleted={handleFinalSubmit}
-                backButtonText="Буцах"
-                nextButtonText={isSubmitting ? "Илгээж байна..." : "Дараах"}
-                disabled={isSubmitting}
-              >
-                <Step>
-                  <Step1 />
-                </Step>
-                <Step>
-                  <Step2 />
-                </Step>
-                <Step>
-                  <Step3 dayLabels={dayLabels} />
-                </Step>
-                <Step>
-                  <div className="max-h-[70vh] overflow-auto px-2">
-                    <Step4
-                      formData={{
-                        ...methods.getValues(),
-                        description: methods.getValues().description ?? "",
-                        backGroundImage:
-                          methods.getValues().backGroundImage ?? "",
-                        aboutUsImage: methods.getValues().aboutUsImage ?? "",
-                      }}
-                      setFormData={() => {}}
-                      handleImageChange={handleImageChange}
-                      companyImagePreview={companyImagePreview}
-                      removeCompanyImage={removeCompanyImage}
-                      handleLogoChange={handleLogoChange}
-                      logoPreview={logoPreview}
-                      removeLogo={removeLogo}
-                    />
-                  </div>
-                </Step>
-                <Step>
-                  <Step5
-                    formData={methods.getValues()}
-                    setFormData={() => {}}
-                  />
-                </Step>
-                <Step>
-                  <Step6
-                    formData={methods.getValues()}
-                    setFormData={() => {}}
-                    dayLabels={dayLabels}
-                    companyImagePreview={companyImagePreview}
-                    logoPreview={logoPreview}
-                  />
-                </Step>
-              </Stepper>
+              <StepperWithValidation
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                handleFinalSubmit={handleFinalSubmit}
+                isSubmitting={isSubmitting}
+                dayLabels={dayLabels}
+                formData={formData}
+                handleImageChange={handleImageChange}
+                companyImagePreview={companyImagePreview}
+                removeCompanyImage={removeCompanyImage}
+                handleLogoChange={handleLogoChange}
+                logoPreview={logoPreview}
+                removeLogo={removeLogo}
+              />
             </FormProvider>
           </motion.div>
         </motion.div>
@@ -438,6 +426,7 @@ export default function CompanySetupPage() {
           </motion.div>
         </motion.div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
