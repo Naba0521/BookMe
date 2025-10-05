@@ -154,11 +154,17 @@ export default function Home() {
               >
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-300 shadow">
-                    <img
-                      src={company.companyLogo}
-                      alt="Logo"
-                      className="h-full w-full object-cover"
-                    />
+                    {company.companyLogo ? (
+                      <img
+                        src={company.companyLogo}
+                        alt="Logo"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        {company.companyName[0]}
+                      </div>
+                    )}
                   </div>
                   <h2 className="text-[22px] font-semibold text-gray-800">
                     {company.companyName}
