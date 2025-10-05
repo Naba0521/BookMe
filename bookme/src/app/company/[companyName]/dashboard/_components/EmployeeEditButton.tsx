@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Employee } from "@/app/signup/_components/Types";
 import { useCompanyAuth } from "@/app/_providers/CompanyAuthProvider";
 import { useState } from "react";
-import { tr } from "date-fns/locale";
 import { api } from "@/axios";
 import { toast } from "sonner";
 import { UpdatedData } from "./EmployeeCard";
 import { LoadingSvg } from "@/app/_components/assets/LoadingSvg";
+import { PencilLine } from "lucide-react";
 interface Props {
   updatedEmployee: UpdatedData;
   employeeId: string;
@@ -45,12 +45,16 @@ export const EmployeeEditButton = ({
   };
 
   return (
-    <Button
-      className="text-gray-700"
-      variant={"outline"}
-      onClick={handleEditEmployeeData}
-    >
-      {!loading ? "Ажилтны мэдээлэл шинэчлэх" : <LoadingSvg />}
-    </Button>
+    <>
+     
+      <Button
+        className="text-gray-700 cursor-pointer"
+        variant={"outline"}
+        onClick={handleEditEmployeeData}
+      >
+         <PencilLine />
+        {!loading ? "Мэдээлэл шинэчлэх" : <LoadingSvg />}
+      </Button>
+    </>
   );
 };

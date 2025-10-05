@@ -16,6 +16,7 @@ import { CompanyWorkingHours } from "./_components/CompanyWorkingHours";
 import { CompanyLocationGetData } from "./_components/CompanyLocationGetData";
 import { EditTemplates } from "./_components/EditTemplate";
 import { Button } from "@/components/ui/button";
+import { House } from "lucide-react";
 import {
   Building2,
   Users,
@@ -67,7 +68,9 @@ export default function Dashboard() {
   const renderPage = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center min-h-[500px] w-full">Loading...</div>
+        <div className="flex items-center justify-center min-h-[500px] w-full">
+          Loading...
+        </div>
       );
     }
     if (error) {
@@ -104,9 +107,7 @@ export default function Dashboard() {
       case "working-hours-settings":
         return <CompanyWorkingHours company={company} />;
       case "templates-settings":
-        return (
-          <EditTemplates company={company} fetchCompany={fetchCompany} />
-        );
+        return <EditTemplates company={company} fetchCompany={fetchCompany} />;
       default:
         return <EmployeesPage />;
     }
@@ -148,10 +149,17 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="hidden lg:block p-4 border-b border-gray-200">
+          <div
+            className="hidden lg:block p-4 border-b border-gray-200 cursor-pointer"
+            onClick={() => {
+              if (company?.companyName) {
+                window.location.href = `/company/${company.companyName}`;
+              }
+            }}
+          >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 text-white">
-                <img className="overflow-hidden" src={company?.companyLogo}/>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg text-white overflow-hidden">
+                <img className="overflow-hidden" src={company?.companyLogo} />
               </div>
               <div>
                 <div className="text-sm font-semibold">
@@ -365,12 +373,11 @@ export default function Dashboard() {
           </div>
 
           <div className="p-4 border-t border-gray-200">
-            <a
-              href={`/company/${company?.companyName}`}
-              className="flex items-center gap-3 text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Буцах
+            <a href={`/company/${company?.companyName}`}>
+              <button className="p-2 rounded-lg hover:bg-gray-100 border flex items-center justify-center gap-3 text-sm">
+                <House className="w-4 h-4" />
+                Үндсэн хуудас
+              </button>
             </a>
           </div>
         </div>
@@ -394,11 +401,9 @@ export default function Dashboard() {
           </div>
 
           <DashboardHeader currentPage={currentPage} />
-          
+
           <div className="flex-1 overflow-auto bg-gray-50 p-4 sm:p-6 w-full">
-            <div className="w-full max-w-none mx-auto">
-              {renderPage()}
-            </div>
+            <div className="w-full max-w-none mx-auto">{renderPage()}</div>
           </div>
         </div>
       </div>
