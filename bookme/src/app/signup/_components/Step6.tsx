@@ -17,7 +17,7 @@ export const Step6 = ({
   dayLabels,
   logoPreview,
 }: Step4Props) => {
-  const days = Object.keys(formData.openingHours) as Array<
+  const days = Object.keys(formData.openingHours || {}) as Array<
     keyof typeof formData.openingHours
   >;
 
@@ -29,6 +29,27 @@ export const Step6 = ({
         <h3 className="font-semibold mb-2">Бүртгэлийн мэдээлэл</h3>
         <p>Имэйл: {formData.email}</p>
         <p>Компаний нэр: {formData.companyName}</p>
+        
+        <div className="mt-3">
+          <p className="text-sm mb-2">Компаний лого:</p>
+          {logoPreview ? (
+            <div className="inline-block p-3 bg-white/10 rounded-lg border border-white/20">
+              <img
+                src={logoPreview}
+                alt="Company Logo"
+                className="h-16 w-16 object-contain"
+                onError={(e) => {
+                  console.error("Logo image failed to load:", logoPreview);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="inline-block p-3 bg-white/5 rounded-lg border border-dashed border-white/30">
+              <p className="text-white/50 text-sm">Лого байхгүй</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div>
@@ -36,7 +57,7 @@ export const Step6 = ({
         <p>Тайлбар: {formData.description || "—"}</p>
         <p>Хаяг: {formData.address}</p>
         <p>Хот: {formData.city}</p>
-        <p>Утас: {formData.phone}</p>
+        <p>Утас: {formData.phoneNumber}</p>
         <p>Тогвортой ажилласан жил: {formData.experience || "—"}</p>
         <p>Нийт үйлчлүүлэгчдийн тоо: {formData.clientNumber || ""}</p>
 

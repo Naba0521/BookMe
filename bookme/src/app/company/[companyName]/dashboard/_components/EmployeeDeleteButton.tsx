@@ -48,7 +48,12 @@ export const EmployeeDeleteButton = ({
     <Dialog>
       <form>
         <DialogTrigger asChild>
-          <Button variant="outline">Ажилтан устгах</Button>
+          <Button
+            variant="outline"
+            className="cursor-pointer text-red-500 hover:text-red-500/90"
+          >
+            Ажилтан устгах
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

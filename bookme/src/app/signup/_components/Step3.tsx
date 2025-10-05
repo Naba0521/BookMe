@@ -15,8 +15,19 @@ export const Step3 = ({ dayLabels }: Step3Props) => {
     formState: { errors },
   } = useFormContext<FullSchemaType>();
 
-  const openingHours = watch("openingHours");
-  const lunchBreak = watch("lunchBreak");
+  const openingHours = watch("openingHours") || {
+    monday: { open: "09:00", close: "18:00", closed: false },
+    tuesday: { open: "09:00", close: "18:00", closed: false },
+    wednesday: { open: "09:00", close: "18:00", closed: false },
+    thursday: { open: "09:00", close: "18:00", closed: false },
+    friday: { open: "09:00", close: "18:00", closed: false },
+    saturday: { open: "10:00", close: "16:00", closed: false },
+    sunday: { open: "10:00", close: "16:00", closed: true },
+  };
+  const lunchBreak = watch("lunchBreak") || {
+    start: "12:00",
+    end: "13:00",
+  };
 
   const days = Object.keys(openingHours) as Array<keyof typeof openingHours>;
 

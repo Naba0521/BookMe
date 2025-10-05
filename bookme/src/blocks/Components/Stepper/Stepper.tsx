@@ -119,6 +119,8 @@ export default function Stepper({
                     step={stepNumber}
                     disableStepIndicators={disableStepIndicators}
                     currentStep={currentStep}
+                    isCurrentStepValid={isCurrentStepValid}
+                    disabled={disabled}
                     onClickStep={(clicked: number) => {
                       setDirection(clicked > currentStep ? 1 : -1);
                       updateStep(clicked);
@@ -276,11 +278,15 @@ function StepIndicator({
   currentStep,
   onClickStep,
   disableStepIndicators = false,
+  isCurrentStepValid = true,
+  disabled = false,
 }: {
   step: number;
   currentStep: number;
   onClickStep: (clicked: number) => void;
   disableStepIndicators?: boolean;
+  isCurrentStepValid?: boolean;
+  disabled?: boolean;
 }) {
   const status =
     currentStep === step
@@ -289,8 +295,19 @@ function StepIndicator({
       ? "inactive"
       : "complete";
 
+  // Determine navigation direction
+  const isForwardNavigation = step > currentStep;
+  const isBackwardNavigation = step < currentStep;
+
+  // Determine if this step indicator should be clickable
+  const isClickable = step !== currentStep && 
+                     !disableStepIndicators && 
+                     !disabled && 
+                     (!isForwardNavigation || isCurrentStepValid);
+
   const handleClick = () => {
-    if (step !== currentStep && !disableStepIndicators) {
+    // Only allow clicking if step is clickable
+    if (isClickable) {
       onClickStep(step);
     }
   };
@@ -298,7 +315,9 @@ function StepIndicator({
   return (
     <motion.div
       onClick={handleClick}
-      className="relative cursor-pointer outline-none focus:outline-none"
+      className={`relative outline-none focus:outline-none ${
+        isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+      }`}
       animate={status}
       initial={false}
     >

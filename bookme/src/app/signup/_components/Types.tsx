@@ -70,14 +70,17 @@ export interface FormDataType {
   password: string;
   confirmPassword: string;
   companyName: string;
+  templateNumber: number;
   description?: string;
   address: string;
+  addressDetailed?: string;
   lat?: number;
   lng?: number;
-  city: string;
-  phone: string;
+  city?: string;
+  phoneNumber: string;
   website?: string;
-  logo?: string;
+  companyLogo?: string;
+  companyImages?: string[];
   openingHours: WorkingHoursType;
   lunchBreak: {
     start: string;
@@ -85,6 +88,10 @@ export interface FormDataType {
   };
   experience?: string;
   clientNumber?: string;
+  isActive?: boolean;
+  employees?: string[];
+  bookings?: string[];
+  users?: string[];
   employeeData?: Employee[];
   setEmployeeData?: (data: Employee[]) => void;
   setOpen?: (open: boolean) => void;
