@@ -22,14 +22,10 @@ export const useStepValidation = (stepNumber: number) => {
         );
         
       case 2:
-        // Required: phone, experience, clientNumber
+        // Required: phoneNumber (experience and clientNumber are optional)
         return !!(
-          values.phone?.trim() &&
-          values.experience?.trim() &&
-          values.clientNumber?.trim() &&
-          !errors.phone &&
-          !errors.experience &&
-          !errors.clientNumber
+          values.phoneNumber?.trim() &&
+          !errors.phoneNumber
         );
         
       case 3:
@@ -46,39 +42,31 @@ export const useStepValidation = (stepNumber: number) => {
         return true;
         
       case 5:
-        // Required: address, city
+        // Required: address only (city is optional)
         return !!(
           values.address?.trim() &&
-          values.city?.trim() &&
-          !errors.address &&
-          !errors.city
+          !errors.address
         );
         
       case 6:
-        // Review step - check all previous steps
+        // Review step - check all required fields only
         return !!(
           values.email?.trim() &&
           values.password?.trim() &&
           values.confirmPassword?.trim() &&
           values.companyName?.trim() &&
-          values.phone?.trim() &&
-          values.experience?.trim() &&
-          values.clientNumber?.trim() &&
+          values.phoneNumber?.trim() &&
           values.openingHours &&
           values.lunchBreak &&
           values.address?.trim() &&
-          values.city?.trim() &&
           !errors.email &&
           !errors.password &&
           !errors.confirmPassword &&
           !errors.companyName &&
-          !errors.phone &&
-          !errors.experience &&
-          !errors.clientNumber &&
+          !errors.phoneNumber &&
           !errors.openingHours &&
           !errors.lunchBreak &&
-          !errors.address &&
-          !errors.city
+          !errors.address
         );
         
       default:

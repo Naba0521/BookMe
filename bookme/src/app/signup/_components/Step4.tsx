@@ -168,18 +168,18 @@ export const Step4 = ({
     <>
       {/* Logo */}
       <div>
-        <Label className="block mb-2 text-white font-medium">Компаний лого <span className="text-red-500">*</span></Label>
+        <Label className="block mb-2 text-white font-medium">Компаний лого <span className="text-red-500 text-[24px]">*</span></Label>
         <p className="text-xs text-white/60 mb-3">Лого зурагаа сонгоно уу</p>
         <div 
           className={`border-2 border-dashed rounded-lg p-6 transition-all duration-200 ${
-            dragActive.logo 
+            dragActive.companyLogo 
               ? "border-blue-400 bg-blue-500/10" 
               : "border-white/30 bg-white/5 hover:bg-white/10"
           }`}
-          onDragEnter={(e) => handleDragEnter(e, 'logo')}
-          onDragLeave={(e) => handleDragLeave(e, 'logo')}
+          onDragEnter={(e) => handleDragEnter(e, 'companyLogo')}
+          onDragLeave={(e) => handleDragLeave(e, 'companyLogo')}
           onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, 'logo', (file) => {
+          onDrop={(e) => handleDrop(e, 'companyLogo', (file) => {
             const input = document.createElement('input');
             input.type = 'file';
             const fileList = {
@@ -214,7 +214,7 @@ export const Step4 = ({
             </div>
           ) : (
             <div className="relative text-center cursor-pointer py-8">
-              {dragActive.logo ? (
+              {dragActive.companyLogo ? (
                 <div className="flex flex-col items-center">
                   <ImageIcon className="w-12 h-12 text-blue-400 mb-3" />
                   <p className="text-blue-400 font-medium">Зураг тавих</p>
@@ -259,10 +259,10 @@ export const Step4 = ({
           </div>
         )}
         
-        {errors.logo && (
+        {errors.companyLogo && (
           <div className="flex items-center gap-2 mt-2 text-red-400">
             <AlertCircle className="w-4 h-4" />
-            <p className="text-sm">{errors.logo.message}</p>
+            <p className="text-sm">{errors.companyLogo.message}</p>
           </div>
         )}
       </div>
@@ -270,7 +270,7 @@ export const Step4 = ({
       {/* Background Image */}
       <div>
         <Label className="block mb-2 text-white mt-6 font-medium">
-          Компаний background зураг <span className="text-red-500">*</span>
+          Компаний background зураг <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <p className="text-xs text-white/60 mb-3">16:9 харьцаатай өргөн зураг сонгоно уу (жишээ: 1920x1080)</p>
         <div 
@@ -347,7 +347,7 @@ export const Step4 = ({
       {/* About Us Image */}
       <div>
         <Label className="block mb-2 text-white mt-6 font-medium">
-          Компаний танилцуулга зураг *
+          Компаний танилцуулга зураг <span className="text-red-500 text-[24px]">*</span>
         </Label>
         <p className="text-xs text-white/60 mb-3">4:3 харьцаатай зураг сонгоно уу (жишээ: 1200x900)</p>
         <div 
@@ -479,28 +479,48 @@ export const Step4 = ({
               </div>
               
               {companyImagePreview.length < MAX_COMPANY_IMAGES && (
-                <div className="relative text-center cursor-pointer border-t border-white/20 pt-4">
-                  {dragActive.company ? (
-                    <div className="flex flex-col items-center py-4">
-                      <ImageIcon className="w-8 h-8 text-blue-400 mb-2" />
-                      <p className="text-blue-400 font-medium">Зургууд тавих</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center py-4">
-                      <Upload className="w-6 h-6 mx-auto text-white/70 mb-2" />
-                      <p className="text-sm text-white/70">Нэмэлт зураг оруулах</p>
-                      <p className="text-xs text-white/50 mt-1">
-                        {companyImagePreview.length}/{MAX_COMPANY_IMAGES} зураг
-                      </p>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
+                <div className="border-t border-white/20 pt-4">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.multiple = true;
+                      input.onchange = (e) => {
+                        handleImageChange(e as any);
+                      };
+                      input.click();
+                    }}
+                  >
+                    <Upload className="w-5 h-5" />
+                    <span>Нэмэлт зураг нэмэх</span>
+                    <span className="text-blue-200 text-sm">
+                      ({companyImagePreview.length}/{MAX_COMPANY_IMAGES})
+                    </span>
+                  </button>
+                  
+                  <div className="relative text-center cursor-pointer mt-3">
+                    {dragActive.company ? (
+                      <div className="flex flex-col items-center py-3 border-2 border-dashed border-blue-400 bg-blue-500/10 rounded-lg">
+                        <ImageIcon className="w-6 h-6 text-blue-400 mb-2" />
+                        <p className="text-blue-400 font-medium text-sm">Зургууд тавих</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center py-3 border-2 border-dashed border-white/30 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                        <Upload className="w-5 h-5 text-white/70 mb-1" />
+                        <p className="text-xs text-white/50">Эсвэл зургуудаа энд чирээрэй</p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </div>
                 </div>
               )}
               
