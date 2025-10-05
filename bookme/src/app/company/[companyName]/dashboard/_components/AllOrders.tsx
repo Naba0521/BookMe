@@ -20,7 +20,11 @@ import {
   Users,
   DollarSign,
 } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 
@@ -31,7 +35,13 @@ type AllOrdersPageProps = {
 };
 
 // Animated counter component
-const AnimatedCounter = ({ value, duration = 1000 }: { value: number; duration?: number }) => {
+const AnimatedCounter = ({
+  value,
+  duration = 1000,
+}: {
+  value: number;
+  duration?: number;
+}) => {
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
@@ -42,13 +52,13 @@ const AnimatedCounter = ({ value, duration = 1000 }: { value: number; duration?:
     const updateCounter = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       // Easing function for smooth animation
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       const currentValue = Math.round(startValue + difference * easeOutQuart);
-      
+
       setDisplayValue(currentValue);
-      
+
       if (progress < 1) {
         requestAnimationFrame(updateCounter);
       }
@@ -85,10 +95,11 @@ export function AllOrdersPage({ company }: AllOrdersPageProps) {
   const filteredOrders = orders.filter((o) => {
     const date = new Date(o.selectedTime);
     const isFuture = date.getTime() >= new Date().getTime();
-const matchesSearch =
-  (o.user?.username ?? "").toLowerCase().includes(search.toLowerCase()) ||
-  (o.employee?.employeeName ?? "").toLowerCase().includes(search.toLowerCase());
-
+    const matchesSearch =
+      (o.user?.username ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (o.employee?.employeeName ?? "")
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -98,7 +109,7 @@ const matchesSearch =
     if (selectedDate) {
       const selected = new Date(selectedDate);
       const orderDate = new Date(o.selectedTime);
-      const sameDay = 
+      const sameDay =
         orderDate.getFullYear() === selected.getFullYear() &&
         orderDate.getMonth() === selected.getMonth() &&
         orderDate.getDate() === selected.getDate();
@@ -222,12 +233,18 @@ const matchesSearch =
   const confirmedOrders = orders.filter((o) => o.status === "confirmed").length;
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const cancelledOrders = orders.filter((o) => o.status === "cancelled").length;
-  const todayOrders = orders.filter((o) => isToday(new Date(o.selectedTime))).length;
-  const weekOrders = orders.filter((o) => isThisWeek(new Date(o.selectedTime), { weekStartsOn: 1 })).length;
-  
-  const confirmationRate = orders.length > 0 ? Math.round((confirmedOrders / orders.length) * 100) : 0;
-  const cancellationRate = orders.length > 0 ? Math.round((cancelledOrders / orders.length) * 100) : 0;
-  
+  const todayOrders = orders.filter((o) =>
+    isToday(new Date(o.selectedTime))
+  ).length;
+  const weekOrders = orders.filter((o) =>
+    isThisWeek(new Date(o.selectedTime), { weekStartsOn: 1 })
+  ).length;
+
+  const confirmationRate =
+    orders.length > 0 ? Math.round((confirmedOrders / orders.length) * 100) : 0;
+  const cancellationRate =
+    orders.length > 0 ? Math.round((cancelledOrders / orders.length) * 100) : 0;
+
   // Calculate revenue (assuming each booking has a price field)
 
   // Calculate trends (mock data for demonstration)
@@ -238,7 +255,7 @@ const matchesSearch =
     return {
       change: percentage,
       isPositive: change >= 0,
-      display: `${percentage > 0 ? '+' : ''}${percentage}%`
+      display: `${percentage > 0 ? "+" : ""}${percentage}%`,
     };
   };
 
@@ -254,19 +271,10 @@ const matchesSearch =
 
   const stats = [
     {
-      title: "Нийт захиалга",
-      value: totalOrders,
-      trend: getTrend(totalOrders, 'total'),
-      icon: ShoppingCart,
-      color: "blue",
-      gradient: "from-blue-500 to-blue-600",
-      description: "Нийт захиалгын тоо",
-    },
-    {
       title: "Батлагдсан захиалга",
       value: confirmedOrders,
       percentage: confirmationRate,
-      trend: getTrend(confirmedOrders, 'confirmed'),
+      trend: getTrend(confirmedOrders, "confirmed"),
       icon: Check,
       color: "green",
       gradient: "from-green-500 to-green-600",
@@ -275,7 +283,7 @@ const matchesSearch =
     {
       title: "Хүлээгдэж буй",
       value: pendingOrders,
-      trend: getTrend(pendingOrders, 'pending'),
+      trend: getTrend(pendingOrders, "pending"),
       icon: Clock,
       color: "yellow",
       gradient: "from-yellow-500 to-yellow-600",
@@ -285,7 +293,7 @@ const matchesSearch =
       title: "Цуцлагдсан",
       value: cancelledOrders,
       percentage: cancellationRate,
-      trend: getTrend(cancelledOrders, 'cancelled'),
+      trend: getTrend(cancelledOrders, "cancelled"),
       icon: AlertCircle,
       color: "red",
       gradient: "from-red-500 to-red-600",
@@ -299,7 +307,12 @@ const matchesSearch =
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Захиалгууд</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Захиалгууд
+                <span className="ml-3 align-middle inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                  {totalOrders}
+                </span>
+              </h1>
               <p className="text-gray-600 mt-1">
                 Шүүлт хийж захиалгуудыг харах
               </p>
@@ -318,7 +331,7 @@ const matchesSearch =
                     selected={selectedDate}
                     onSelect={(date) => {
                       setSelectedDate(date);
-                      setFilter("all"); 
+                      setFilter("all");
                     }}
                     initialFocus
                   />
@@ -369,44 +382,38 @@ const matchesSearch =
         </div>
 
         {/* Enhanced Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="group relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="group relative bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
             >
               {/* Background Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                    <stat.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className={`flex items-center gap-1 text-sm font-semibold ${
-                    stat.trend.isPositive ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stat.trend.isPositive ? (
-                      <TrendingUp className="w-4 h-4" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4" />
-                    )}
-                    {stat.trend.display}
-                  </div>
-                </div>
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}
+              ></div>
 
+              <div className="relative z-10">
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-600">{stat.title}</h3>
-                  <div className="flex items-baseline gap-2">
-                    {stat.percentage && (
-                      <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                        stat.percentage >= 80 ? 'bg-green-100 text-green-700' : 
-                        stat.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' : 
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {stat.percentage}%
-                      </span>
-                    )}
+                  <div
+                    className={`${
+                      stat.description
+                        ? "flex gap-2"
+                        : "flex items-center gap-2 h-full mt-4"
+                    }`}
+                  >
+                    <div
+                      className={`rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg h-5.5 w-5.5 p-0.5`}
+                    >
+                      <stat.icon className={`h-4.5 w-4.5 text-white`} />
+                    </div>{" "}
+                    <div
+                      className={"text-sm font-medium text-gray-600 flex gap-2"}
+                    >
+                      <h3 className="">
+                        {stat.title}: {stat.value}
+                      </h3>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500">{stat.description}</p>
                 </div>
@@ -415,7 +422,7 @@ const matchesSearch =
                 {stat.percentage && (
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full bg-gradient-to-r ${stat.gradient} transition-all duration-1000 ease-out`}
                         style={{ width: `${stat.percentage}%` }}
                       ></div>
