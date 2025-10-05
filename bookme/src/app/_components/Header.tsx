@@ -19,7 +19,7 @@ const Header = ({ company }: CompanyNavBarProps) => {
   const { company: loggedInCompany, signOutCompany } = useCompanyAuth();
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
@@ -124,7 +124,7 @@ const Header = ({ company }: CompanyNavBarProps) => {
         ${
           isMobile
             ? "flex justify-between items-center"
-            : "grid grid-cols-12 items-center gap-2"
+            : "grid grid-cols-12 items-center justify-between gap-2"
         }`}
       style={{
         marginLeft: isMobile ? "5%" : "10%",
@@ -135,15 +135,14 @@ const Header = ({ company }: CompanyNavBarProps) => {
           "inset 0 1px 0px rgba(255,255,255,0.2), 0 2px 8px rgba(0,0,0,0.16)",
       }}
     >
-      <div className="text-white text-lg font-bold col-span-2 min-w-0">
+      <div className="text-white text-lg font-bold col-span-1 min-w-0">
         Bookme
       </div>
-
       <ul
         className={`${
           isMobile
             ? "hidden"
-            : "flex items-center justify-center gap-2 list-none col-span-8 min-w-0"
+            : "flex items-center justify-end gap-2 list-none col-span-7 min-w-0"
         }`}
       >
         <li className="flex-shrink-1 opacity-0">
@@ -189,39 +188,70 @@ const Header = ({ company }: CompanyNavBarProps) => {
       </ul>
       <div
         className={`${
-          isMobile ? "ml-auto" : "col-span-2 flex justify-end min-w-0"
+          isMobile ? "ml-auto" : "col-span-4 flex justify-end min-w-0"
         }`}
       >
         {!loggedInCompany ? (
-          <Link href={"/signin"}>
-            <button
-              className="group px-3 py-2 cursor-pointer rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 whitespace-nowrap text-xs"
-              style={{
-                background:
-                  "linear-gradient(to right, #FFFFFF 0%, #E6F3FF 52%, #B3D9FF 100%)",
-                color: "#000A17",
-                fontSize: "0.75rem",
-                fontWeight: "600",
-              }}
-            >
-              <span className="flex items-center gap-1">
-                Нэвтрэх
-                <svg
-                  className="w-3 h-3 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </button>
-          </Link>
+          <div className="flex flex-row gap-4">
+            <Link href={"/signup"}>
+              <button
+                className="group px-3 py-2 cursor-pointer rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 whitespace-nowrap text-xs"
+                style={{
+                  background:
+                    "linear-gradient(to right, #FFFFFF 0%, #E6F3FF 52%, #B3D9FF 100%)",
+                  color: "#000A17",
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                }}
+              >
+                <span className="flex items-center gap-1">
+                  Бүртгүүлэх
+                  <svg
+                    className="w-3 h-3 transition-transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </span>
+              </button>
+            </Link>
+            <Link href={"/signin"}>
+              <button
+                className="group px-3 py-2 cursor-pointer rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 whitespace-nowrap text-xs"
+                style={{
+                  background:
+                    "linear-gradient(to right, #FFFFFF 0%, #E6F3FF 52%, #B3D9FF 100%)",
+                  color: "#000A17",
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                }}
+              >
+                <span className="flex items-center gap-1">
+                  Нэвтрэх
+                  <svg
+                    className="w-3 h-3 transition-transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </span>
+              </button>
+            </Link>
+          </div>
         ) : (
           <>
             <Link href={`/company/${company}/dashboard`}>
