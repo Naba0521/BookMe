@@ -10,34 +10,41 @@ import { toast } from "sonner";
 import { api } from "@/axios";
 import { useCompanyAuth } from "@/app/_providers/CompanyAuthProvider";
 import { Booking, Company, Employee } from "../../_components/CompanyTypes";
+import { Users, Calendar, Clock } from "lucide-react";
 
 interface BookingCalendarProps {
   company?: Company;
   selectedEmployee?: Employee | null;
   bookings?: Booking[];
+  onEmployeeSelect?: (employee: Employee) => void;
+  onShowAll?: () => void;
+  activeStaff?: number;
+  pendingOrders?: number;
+  completedToday?: number;
 }
 
 const getEventColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case "confirmed":
-      return "#1a73e8";
+      return "#3b82f6";
     case "cancelled":
-      return "#ea4335";
+      return "#ef4444";
     case "completed":
-      return "#34a853";
+      return "#10b981";
     case "pending":
-      return "#fbbc04";
+      return "#f59e0b";
     default:
-      return "#9aa0a6";
+      return "#6b7280";
   }
 };
 
 const getEventStyle = (status: string) => {
   const baseColor = getEventColor(status);
   return {
-    backgroundColor: baseColor,
+    background: `linear-gradient(135deg, ${baseColor}, ${baseColor}dd)`,
     borderColor: baseColor,
     color: "#ffffff",
+    boxShadow: `0 4px 12px ${baseColor}40`,
   };
 };
 
@@ -57,6 +64,12 @@ const formatSelectedTime = (date: Date): string => {
 
 const parseDuration = (durationStr?: string): number => {
   if (!durationStr) return 60;
+
+  // Handle different duration formats
+  if (durationStr.includes("30")) return 30;
+  if (durationStr.includes("60")) return 60;
+  if (durationStr.includes("90")) return 90;
+  if (durationStr.includes("120")) return 120;
 
   const match = durationStr.match(/(\d+)/);
   return match ? parseInt(match[1]) : 60;
@@ -114,20 +127,32 @@ const isValidTimeSlot = (
 const getAvailableSlotDurations = (employee: Employee): number[] => {
   const duration = parseDuration(employee.duration);
 
-  if (duration === 60) {
-    return [60];
+  // Always provide multiple duration options
+  if (duration === 30) {
+    return [30, 60, 90];
   }
 
-  if (duration === 30) {
-    return [30, 60];
+  if (duration === 60) {
+    return [30, 60, 90];
   }
-  return [duration];
+
+  if (duration === 90) {
+    return [30, 60, 90];
+  }
+
+  // Default options
+  return [30, 60, 90];
 };
 
 export const BookingCalendar = ({
   company,
   selectedEmployee,
   bookings = [],
+  onEmployeeSelect,
+  onShowAll,
+  activeStaff = 0,
+  pendingOrders = 0,
+  completedToday = 0,
 }: BookingCalendarProps) => {
   const [events, setEvents] = useState<EventInput[]>([]);
   const { company: loggedInCompany } = useCompanyAuth();
@@ -135,71 +160,101 @@ export const BookingCalendar = ({
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number>(60);
   const [calendarApi, setCalendarApi] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<string>("timeGridWeek");
 
   useEffect(() => {
     const blockedTimeSlots: EventInput[] = [];
 
     if (selectedEmployee) {
+      // Generate blocked time slots for the current month view
       const today = new Date();
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-      for (let i = 0; i < 7; i++) {
-        const currentDate = new Date(startOfWeek);
-        currentDate.setDate(startOfWeek.getDate() + i);
+      // Generate for the entire month
+      for (
+        let d = new Date(startOfMonth);
+        d <= endOfMonth;
+        d.setDate(d.getDate() + 1)
+      ) {
+        const dateStr = d.toISOString().split("T")[0];
 
-        const dateStr = currentDate.toISOString().split("T")[0];
-
+        // Block time before work starts
         if (selectedEmployee.startTime) {
-          const workStart = timeToMinutes(selectedEmployee.startTime);
-          if (workStart > 0) {
-            blockedTimeSlots.push({
-              id: `blocked-before-${dateStr}`,
-              title: "Ажил эхлээгүй",
-              start: `${dateStr}T00:00:00`,
-              end: `${dateStr}T${selectedEmployee.startTime}:00`,
-              backgroundColor: "#f5f5f5",
-              borderColor: "#d1d5db",
-              textColor: "#6b7280",
-              display: "background",
-              overlap: false,
-            });
-          }
-        }
-        if (selectedEmployee.endTime) {
-          const workEnd = timeToMinutes(selectedEmployee.endTime);
-          if (workEnd < 24 * 60) {
-            blockedTimeSlots.push({
-              id: `blocked-after-${dateStr}`,
-              title: "Ажил дууссан",
-              start: `${dateStr}T${selectedEmployee.endTime}:00`,
-              end: `${dateStr}T23:59:59`,
-              backgroundColor: "#f5f5f5",
-              borderColor: "#d1d5db",
-              textColor: "#6b7280",
-              display: "background",
-              overlap: false,
-            });
-          }
+          blockedTimeSlots.push({
+            id: `blocked-before-${dateStr}`,
+            title: "Ажил эхлээгүй",
+            start: `${dateStr}T00:00:00`,
+            end: `${dateStr}T${selectedEmployee.startTime}:00`,
+            backgroundColor: "#f8f9fa",
+            borderColor: "#e9ecef",
+            textColor: "#6c757d",
+            display: "background",
+            overlap: false,
+            classNames: "blocked-time-slot",
+          });
         }
 
+        // Block time after work ends
+        if (selectedEmployee.endTime) {
+          blockedTimeSlots.push({
+            id: `blocked-after-${dateStr}`,
+            title: "Ажил дууссан",
+            start: `${dateStr}T${selectedEmployee.endTime}:00`,
+            end: `${dateStr}T23:59:59`,
+            backgroundColor: "#f8f9fa",
+            borderColor: "#e9ecef",
+            textColor: "#6c757d",
+            display: "background",
+            overlap: false,
+            classNames: "blocked-time-slot",
+          });
+        }
+
+        // Add lunch break
         if (selectedEmployee.lunchTimeStart && selectedEmployee.lunchTimeEnd) {
+          // Convert lunch time to proper format (e.g., "12-1" to "12:00-13:00")
+          let lunchStart = selectedEmployee.lunchTimeStart;
+          let lunchEnd = selectedEmployee.lunchTimeEnd;
+
+          // Handle format like "12-1" -> "12:00-13:00"
+          if (lunchStart.includes("-")) {
+            const parts = lunchStart.split("-");
+            lunchStart = `${parts[0]}:00`;
+            lunchEnd = `${parseInt(parts[1]) + 12}:00`; // Convert 1 to 13:00
+          } else if (!lunchStart.includes(":")) {
+            lunchStart = `${lunchStart}:00`;
+          }
+
+          if (!lunchEnd.includes(":")) {
+            lunchEnd = `${lunchEnd}:00`;
+          }
+
           blockedTimeSlots.push({
             id: `lunch-${dateStr}`,
             title: "Цайны цаг",
-            start: `${dateStr}T${selectedEmployee.lunchTimeStart}:00`,
-            end: `${dateStr}T${selectedEmployee.lunchTimeEnd}:00`,
-            backgroundColor: "#fef3c7",
-            borderColor: "#f59e0b",
-            textColor: "#92400e",
+            start: `${dateStr}T${lunchStart}`,
+            end: `${dateStr}T${lunchEnd}`,
+            backgroundColor: "#fff3cd",
+            borderColor: "#ffeaa7",
+            textColor: "#856404",
             display: "background",
             overlap: false,
+            classNames: "lunch-break-slot",
           });
         }
       }
     }
 
-    const calendarEvents: EventInput[] = bookings.map((booking) => {
+    // Filter bookings to only show those for the selected employee
+    const filteredBookings = selectedEmployee
+      ? bookings.filter(
+          (booking) => booking.employee?._id === selectedEmployee._id
+        )
+      : bookings;
+
+    const calendarEvents: EventInput[] = filteredBookings.map((booking) => {
       const duration = booking.employee?.duration
         ? parseDuration(booking.employee.duration)
         : 60;
@@ -213,7 +268,7 @@ export const BookingCalendar = ({
         end: new Date(
           new Date(booking.selectedTime).getTime() + duration * 60 * 1000
         ),
-        backgroundColor: style.backgroundColor,
+        backgroundColor: style.background,
         borderColor: style.borderColor,
         textColor: style.color,
         extendedProps: {
@@ -221,6 +276,7 @@ export const BookingCalendar = ({
           status: booking.status,
           customerName: booking.user?.username || "Guest",
         },
+        classNames: `booking-event booking-${booking.status.toLowerCase()}`,
       };
     });
 
@@ -272,6 +328,8 @@ export const BookingCalendar = ({
       return;
     }
 
+    setIsLoading(true);
+
     const formattedSelectedTime =
       selectedSlot.toLocaleDateString("mn-MN", {
         year: "numeric",
@@ -293,11 +351,11 @@ export const BookingCalendar = ({
         selectedTime: formattedSelectedTime,
         status: "confirmed",
         duration: selectedDuration,
-        user: loggedInCompany._id
+        user: loggedInCompany._id,
       });
 
       if (response.status === 201) {
-        toast.success("Захиалга амжилттай илгээгдлээ!");
+        toast.success("🎉 Захиалга амжилттай илгээгдлээ!");
 
         const style = getEventStyle("confirmed");
         const newEvent: EventInput = {
@@ -305,7 +363,7 @@ export const BookingCalendar = ({
           title: "Guest",
           start: selectedSlot,
           end: new Date(selectedSlot.getTime() + selectedDuration * 60 * 1000),
-          backgroundColor: style.backgroundColor,
+          backgroundColor: style.background,
           borderColor: style.borderColor,
           textColor: style.color,
           extendedProps: {
@@ -321,11 +379,13 @@ export const BookingCalendar = ({
       }
     } catch (error: any) {
       if (error.response.status === 409) {
-        console.error("Захиалга давхардлаа", error)
-        toast.error("Захиалга давхардлаа");
+        console.error("Захиалга давхардлаа", error);
+        toast.error("⚠️ Захиалга давхардлаа");
       }
       console.error("Захиалга илгээхэд алдаа:", error);
-      toast.error("Захиалга илгээхэд алдаа гарлаа");
+      toast.error("❌ Захиалга илгээхэд алдаа гарлаа");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -334,39 +394,26 @@ export const BookingCalendar = ({
     setSelectedSlot(null);
   };
 
-  const statusLegend = [
-    { status: "pending", label: "Хүлээгдэж буй", color: "#fbbc04" },
-    { status: "confirmed", label: "Баталгаажсан", color: "#1a73e8" },
-    { status: "completed", label: "Дууссан", color: "#34a853" },
-    { status: "cancelled", label: "Цуцлагдсан", color: "#ea4335" },
-    { status: "blocked", label: "Боломжгүй цаг", color: "#f5f5f5" },
-    { status: "lunch", label: "Цайны цаг", color: "#fef3c7" },
-  ];
-
   const handleViewChange = (view: string) => {
+    setCurrentView(view);
     if (calendarApi) {
       calendarApi.changeView(view);
     }
   };
 
   const getSlotDuration = () => {
-    if (!selectedEmployee?.duration) return "00:30:00";
-
-    const duration = parseDuration(selectedEmployee.duration);
-    if (duration === 60) {
-      return "01:00:00";
-    }
+    // Always use 30-minute slots for better granularity
     return "00:30:00";
   };
   const getSlotMinTime = () => {
     return selectedEmployee?.startTime
-      ? selectedEmployee.startTime + ":00"
+      ? `${selectedEmployee.startTime}:00`
       : "08:00:00";
   };
 
   const getSlotMaxTime = () => {
     return selectedEmployee?.endTime
-      ? selectedEmployee.endTime + ":00"
+      ? `${selectedEmployee.endTime}:00`
       : "20:00:00";
   };
 
@@ -375,13 +422,15 @@ export const BookingCalendar = ({
     : [60];
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+    <div className="w-full overflow-hidden bg-white border shadow-2xl border-gray-200/60 rounded-3xl">
+      {/* Clean Professional Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="p-6">
+          {/* Header Title */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="currentColor"
@@ -391,74 +440,200 @@ export const BookingCalendar = ({
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl font-medium text-gray-900">
-                    {selectedEmployee
-                      ? selectedEmployee.employeeName
-                      : "Бүх ажилтнууд"}
-                  </h1>
-                  <p className="text-sm text-gray-500">
+                  <h1 className="text-2xl font-bold text-gray-900">
                     Цаг захиалгын календар
-                    {selectedEmployee &&
-                      selectedEmployee.startTime &&
-                      selectedEmployee.endTime && (
-                        <span className="ml-2">
-                          ({selectedEmployee.startTime} -{" "}
-                          {selectedEmployee.endTime}
-                          {selectedEmployee.lunchTimeStart &&
-                            selectedEmployee.lunchTimeEnd && (
-                              <>
-                                , Цай: {selectedEmployee.lunchTimeStart} -{" "}
-                                {selectedEmployee.lunchTimeEnd}
-                              </>
-                            )}
-                          )
+                  </h1>
+                  <div className="flex items-center mt-1 space-x-3">
+                    {selectedEmployee ? (
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          {selectedEmployee.profileImage ? (
+                            <img
+                              src={selectedEmployee.profileImage}
+                              alt={selectedEmployee.employeeName}
+                              className="object-cover w-8 h-8 border-2 border-green-400 rounded-full"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center w-8 h-8 bg-green-100 border-2 border-green-400 rounded-full">
+                              <svg
+                                className="w-4 h-4 text-green-600"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className="absolute w-3 h-3 bg-green-400 border-2 border-white rounded-full -bottom-0.5 -right-0.5"></div>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-base font-semibold text-gray-800">
+                            {selectedEmployee.employeeName
+                              .charAt(0)
+                              .toUpperCase() +
+                              selectedEmployee.employeeName.slice(1)}
+                          </span>
+                          <div className="flex items-center mt-1 space-x-4">
+                            {selectedEmployee.startTime &&
+                              selectedEmployee.endTime && (
+                                <div className="flex items-center space-x-1">
+                                  <svg
+                                    className="w-3 h-3 text-gray-500"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                                  </svg>
+                                  <span className="text-xs text-gray-600">
+                                    Ажлын цаг: {selectedEmployee.startTime} -{" "}
+                                    {selectedEmployee.endTime}
+                                  </span>
+                                </div>
+                              )}
+                            {selectedEmployee.lunchTimeStart &&
+                              selectedEmployee.lunchTimeEnd && (
+                                <div className="flex items-center space-x-1">
+                                  <svg
+                                    className="w-3 h-3 text-gray-500"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                                  </svg>
+                                  <span className="text-xs text-gray-600">
+                                    Цайны цаг: {selectedEmployee.lunchTimeStart}{" "}
+                                    - {selectedEmployee.lunchTimeEnd}
+                                  </span>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span className="text-sm text-gray-600">
+                          Ажилтан сонгоно уу
                         </span>
-                      )}
-                  </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls on the right */}
+              <div className="flex items-center space-x-4">
+                {/* Employee Selection */}
+                <div className="relative">
+                  <select
+                    value={selectedEmployee?._id || ""}
+                    onChange={(e) => {
+                      if (e.target.value === "all") {
+                        onShowAll?.();
+                      } else {
+                        const employee = company?.employees?.find(
+                          (emp) => emp._id === e.target.value
+                        );
+                        if (employee) {
+                          onEmployeeSelect?.(employee);
+                        }
+                      }
+                    }}
+                    className="py-3 pl-12 pr-10 text-sm font-medium text-gray-700 transition-all duration-300 bg-white border border-gray-300 rounded-lg appearance-none hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">👥 Бүх ажилтнууд</option>
+                    {company?.employees?.map((employee) => (
+                      <option key={employee._id} value={employee._id}>
+                        {employee.employeeName}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Avatar in dropdown */}
+                  {selectedEmployee && (
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <div className="relative">
+                        {selectedEmployee.profileImage ? (
+                          <img
+                            src={selectedEmployee.profileImage}
+                            alt={selectedEmployee.employeeName}
+                            className="object-cover w-6 h-6 border border-gray-300 rounded-full"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center w-6 h-6 bg-gray-100 border border-gray-300 rounded-full">
+                            <svg
+                              className="w-3 h-3 text-gray-500"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                          </div>
+                        )}
+                        <div className="absolute w-2 h-2 bg-green-400 border border-white rounded-full -bottom-0.5 -right-0.5"></div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* View Controls */}
+                <div className="flex items-center p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => handleViewChange("dayGridMonth")}
+                    className={`px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${
+                      currentView === "dayGridMonth"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    📅 Сар
+                  </button>
+                  <button
+                    onClick={() => handleViewChange("timeGridWeek")}
+                    className={`px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${
+                      currentView === "timeGridWeek"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    📊 7 хоног
+                  </button>
+                  <button
+                    onClick={() => handleViewChange("timeGridDay")}
+                    className={`px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${
+                      currentView === "timeGridDay"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    🕐 Өдөр
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => handleViewChange("dayGridMonth")}
-                className="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              >
-                Сар
-              </button>
-              <button
-                onClick={() => handleViewChange("timeGridWeek")}
-                className="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 bg-white text-gray-900 shadow-sm"
-              >
-                7 хоног
-              </button>
-              <button
-                onClick={() => handleViewChange("timeGridDay")}
-                className="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              >
-                Өдөр
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-6">
-            {statusLegend.map((item) => (
-              <div key={item.status} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm text-gray-600 font-medium">
-                  {item.label}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Clean Professional Calendar */}
+      <div className="p-6">
+        <div className="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
@@ -473,127 +648,236 @@ export const BookingCalendar = ({
               week: "7 хоног",
               day: "Өдөр",
             }}
+            dayHeaderFormat={{
+              weekday: "short",
+              month: "numeric",
+              day: "numeric",
+            }}
             editable={false}
             selectable={!!selectedEmployee}
             nowIndicator={true}
             selectMirror={true}
             dayMaxEvents={false}
             allDaySlot={false}
-            slotMinTime={
-              selectedEmployee?.startTime
-                ? `${selectedEmployee.startTime}:00`
-                : "08:00:00"
-            }
-            slotMaxTime={
-              selectedEmployee?.endTime
-                ? `${selectedEmployee.endTime}:00`
-                : "20:00:00"
-            }
+            slotMinTime={getSlotMinTime()}
+            slotMaxTime={getSlotMaxTime()}
             slotDuration={getSlotDuration()}
             events={events}
             dateClick={selectedEmployee ? handleDateClick : undefined}
-            height={selectedEmployee ? 1000 : "auto"}
+            height="auto"
             contentHeight={800}
             locale="en"
             firstDay={1}
             ref={(calendarRef) => {
               if (calendarRef) {
                 setCalendarApi(calendarRef.getApi());
+                setCurrentView(calendarRef.getApi().view.type);
               }
             }}
-            eventContent={(arg) => (
-              <div className="px-2 py-1 h-full overflow-hidden">
-                <div className="text-xs font-semibold truncate mb-1">
-                  {arg.event.extendedProps?.customerName || arg.event.title}
-                </div>
-                <div className="text-xs opacity-90 truncate">
-                  {arg.event.extendedProps?.employee}
-                </div>
-                <div className="text-xs opacity-75 mt-1">
-                  {arg.event.start?.toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
-                </div>
-              </div>
-            )}
-            eventClassNames="rounded-md border-l-4 cursor-pointer hover:shadow-lg transition-shadow duration-200"
-            dayHeaderClassNames="bg-gray-50 border-b border-gray-200 py-3 text-center text-sm font-medium text-gray-700"
-            slotLabelClassNames="text-xs text-gray-500 pr-2"
+            eventContent={(arg) => {
+              const view = calendarApi?.view?.type;
+              const isMonthView = view === "dayGridMonth";
+              const event = arg.event;
+              const customerName =
+                event.extendedProps?.customerName || event.title;
+              const employee = event.extendedProps?.employee;
+              const startTime = event.start?.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              });
+
+              if (isMonthView) {
+                return (
+                  <div className="h-full px-1 py-0.5 overflow-hidden">
+                    <div className="text-xs font-bold text-black truncate">
+                      {customerName}
+                    </div>
+                    <div className="text-xs text-gray-700 truncate">
+                      👤 {employee}
+                    </div>
+                    <div className="text-xs text-gray-600 truncate">
+                      {startTime}
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="h-full px-2 py-1 overflow-hidden">
+                    <div className="text-xs font-bold text-white truncate drop-shadow-sm">
+                      {customerName}
+                    </div>
+                    <div className="text-xs font-medium truncate text-white/95">
+                      👤 {employee}
+                    </div>
+                  </div>
+                );
+              }
+            }}
+            eventClassNames="cursor-pointer hover:shadow-md transition-all duration-200"
+            dayHeaderClassNames="bg-gray-50 border-b border-gray-200 py-3 text-center text-sm font-bold text-gray-800"
+            slotLabelClassNames="text-sm font-bold text-gray-700 pr-3"
             viewClassNames="p-4"
+            nowIndicatorClassNames="bg-red-500 h-0.5"
             eventDidMount={(info) => {
+              const view = calendarApi?.view?.type;
+              const isMonthView = view === "dayGridMonth";
+
+              // Enhanced professional styling for better visibility
               info.el.style.border = "none";
-              info.el.style.borderRadius = "4px";
-              info.el.style.fontSize = "12px";
-              info.el.style.fontWeight = "500";
+              info.el.style.borderRadius = isMonthView ? "4px" : "8px";
+              info.el.style.fontSize = isMonthView ? "11px" : "11px";
+              info.el.style.fontWeight = "600";
+              info.el.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+              info.el.style.borderLeft = isMonthView
+                ? "3px solid"
+                : "4px solid";
+              info.el.style.transition = "all 0.3s ease";
+              info.el.style.padding = isMonthView ? "2px 4px" : "4px 6px";
+              info.el.style.minHeight = isMonthView ? "auto" : "50px";
+              info.el.style.maxHeight = isMonthView ? "auto" : "60px";
+              info.el.style.lineHeight = "1.1";
+              info.el.style.overflow = "hidden";
+
+              // Different text shadow for month vs week view
+              if (isMonthView) {
+                info.el.style.textShadow = "none";
+                info.el.style.background = "rgba(255, 255, 255, 0.9)";
+              } else {
+                info.el.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.3)";
+              }
+
+              // Blocked time slots
+              if (info.event.classNames.includes("blocked-time-slot")) {
+                info.el.style.opacity = "0.6";
+                info.el.style.cursor = "not-allowed";
+                info.el.style.background = "#f3f4f6";
+                info.el.style.borderLeft = isMonthView
+                  ? "3px solid #9ca3af"
+                  : "4px solid #9ca3af";
+                info.el.style.color = "#374151";
+                info.el.style.fontWeight = "600";
+              }
+
+              if (info.event.classNames.includes("lunch-break-slot")) {
+                info.el.style.opacity = "0.8";
+                info.el.style.cursor = "not-allowed";
+                info.el.style.background = "#fbbf24";
+                info.el.style.borderLeft = isMonthView
+                  ? "3px solid #f59e0b"
+                  : "4px solid #f59e0b";
+                info.el.style.color = "#92400e";
+                info.el.style.fontWeight = "700";
+              }
+
+              // Enhanced hover effects
+              info.el.addEventListener("mouseenter", () => {
+                if (
+                  !info.event.classNames.includes("blocked-time-slot") &&
+                  !info.event.classNames.includes("lunch-break-slot")
+                ) {
+                  info.el.style.transform = "translateY(-2px)";
+                  info.el.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.2)";
+                }
+              });
+
+              info.el.addEventListener("mouseleave", () => {
+                info.el.style.transform = "translateY(0)";
+                info.el.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+              });
             }}
           />
         </div>
       </div>
 
       {dialogOpen && selectedSlot && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-md mx-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
-                Цаг захиалга үүсгэх
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="w-full max-w-lg mx-auto overflow-hidden bg-white shadow-2xl rounded-2xl">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative px-8 py-6">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-center w-12 h-12 border shadow-lg bg-white/20 backdrop-blur-sm rounded-xl border-white/30">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      Цаг захиалга үүсгэх
+                    </h2>
+                    <p className="text-blue-100">Шинэ захиалга нэмэх</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="px-6 py-4 space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">
-                    {selectedEmployee?.employeeName}
+            <div className="px-8 py-8 space-y-8">
+              {/* Employee Info */}
+              <div className="relative overflow-hidden border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5"></div>
+                <div className="relative flex items-center p-6 space-x-4">
+                  <div className="flex items-center justify-center shadow-lg w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl">
+                    <svg
+                      className="text-white w-7 h-7"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Ажлын цаг: {selectedEmployee?.startTime} -{" "}
-                    {selectedEmployee?.endTime}
+                  <div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {selectedEmployee?.employeeName}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Ажлын цаг: {selectedEmployee?.startTime} -{" "}
+                      {selectedEmployee?.endTime}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">
-                    {formatSelectedTime(selectedSlot)}
+              {/* Time Info */}
+              <div className="relative overflow-hidden border border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-600/5 to-slate-600/5"></div>
+                <div className="relative flex items-center p-6 space-x-4">
+                  <div className="flex items-center justify-center shadow-lg w-14 h-14 bg-gradient-to-br from-gray-500 to-slate-500 rounded-2xl">
+                    <svg
+                      className="text-white w-7 h-7"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                    </svg>
                   </div>
-                  <div className="text-xs text-gray-500">Сонгосон цаг</div>
+                  <div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {formatSelectedTime(selectedSlot)}
+                    </div>
+                    <div className="text-sm text-gray-600">Сонгосон цаг</div>
+                  </div>
                 </div>
               </div>
 
+              {/* Duration Selection */}
               {availableDurations.length > 1 && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                <div className="space-y-4">
+                  <label className="text-lg font-bold text-gray-800">
                     Үргэлжлэх хугацаа:
                   </label>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-4">
                     {availableDurations.map((duration) => (
                       <button
                         key={duration}
                         onClick={() => setSelectedDuration(duration)}
-                        className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                        className={`px-6 py-4 text-sm font-semibold rounded-xl border-2 transition-all duration-300 ${
                           selectedDuration === duration
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-600 shadow-lg transform scale-105"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md"
                         }`}
                       >
                         {duration} минут
@@ -603,32 +887,69 @@ export const BookingCalendar = ({
                 </div>
               )}
 
-              <div className="text-xs text-gray-500 px-3">
-                Үргэлжлэх хугацаа: {selectedDuration} минут
-                <br />
-                Дуусах цаг:{" "}
-                {new Date(
-                  selectedSlot.getTime() + selectedDuration * 60 * 1000
-                ).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
+              {/* Booking Summary */}
+              <div className="relative overflow-hidden border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center mb-4 space-x-3">
+                    <div className="flex items-center justify-center w-10 h-10 shadow-lg bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+                      <svg
+                        className="w-5 h-5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Захиалгын дэлгэрэнгүй
+                    </h3>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Үргэлжлэх хугацаа:</span>
+                      <span className="font-bold text-gray-900">
+                        {selectedDuration} минут
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Дуусах цаг:</span>
+                      <span className="font-bold text-gray-900">
+                        {new Date(
+                          selectedSlot.getTime() + selectedDuration * 60 * 1000
+                        ).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="flex justify-end px-8 py-6 space-x-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={handleCancelBooking}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                disabled={isLoading}
+                className="px-6 py-3 text-sm font-semibold text-gray-700 transition-all duration-200 bg-white border border-gray-300 shadow-sm rounded-xl hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Цуцлах
               </button>
               <button
                 onClick={handleConfirmBooking}
-                className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors shadow-sm"
+                disabled={isLoading}
+                className="px-8 py-3 text-sm font-bold text-white transition-all duration-200 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                Хадгалах
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 rounded-full border-white/30 border-t-white animate-spin"></div>
+                    <span>Хадгалагдаж байна...</span>
+                  </div>
+                ) : (
+                  "💾 Хадгалах"
+                )}
               </button>
             </div>
           </div>
