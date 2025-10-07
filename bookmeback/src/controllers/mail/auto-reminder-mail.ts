@@ -33,16 +33,18 @@ interface UserDoc {
   username: string;
   email: string;
   phoneNumber: string;
+  address: string;
 }
 
 interface EmployeeDoc {
   _id: Types.ObjectId;
-  name: string;
+  employeeName: string;
 }
 
 interface CompanyDoc {
   _id: Types.ObjectId;
   companyName: string;
+  address: string;
 }
 
 interface PopulatedBookingDoc
@@ -57,16 +59,18 @@ interface PopulatedUser {
   username: string;
   email: string;
   phoneNumber: string;
+  address: string;
 }
 
 interface PopulatedEmployee {
   _id: string;
-  name: string;
+  employeeName: string;
 }
 
 interface PopulatedCompany {
   _id: string;
   companyName: string;
+  address: string;
 }
 
 interface PopulatedBooking {
@@ -91,7 +95,7 @@ const isPopulatedBooking = (booking: any): booking is PopulatedBookingDoc => {
     typeof booking.user.username === "string" &&
     booking.employee &&
     typeof booking.employee === "object" &&
-    typeof booking.employee.name === "string" &&
+    typeof booking.employee.employeeName === "string" &&
     booking.company &&
     typeof booking.company === "object" &&
     typeof booking.company.companyName === "string"
@@ -100,6 +104,21 @@ const isPopulatedBooking = (booking: any): booking is PopulatedBookingDoc => {
 
 export const sendReminderEmail = async (booking: PopulatedBookingDoc) => {
   try {
+    // Get travel time if both addresses are available
+    let travelTimeText = "";
+    if (booking.user?.address && booking.company?.address) {
+      const travelTime = await getTravelTime(
+        booking.user.address,
+        booking.company.address
+      );
+      if (travelTime) {
+        travelTimeText = `
+          <p><strong>🚗 Очих хугацаа яг одоогийн байдлаар:</strong> ${travelTime}</p>
+          <p style="color: #666; font-size: 14px;"><em>Таны одоогийн байршил (${booking.user.address})-аас ${booking.company.companyName} хүртэлх замын хугацаа</em></p>
+        `;
+      }
+    }
+
     const mailOptions = {
       from: "mnbookme@gmail.com",
       to: booking.user.email,
@@ -113,9 +132,10 @@ export const sendReminderEmail = async (booking: PopulatedBookingDoc) => {
             <p><strong>Цаг:</strong> ${moment(booking.selectedTime)
               .tz("Asia/Ulaanbaatar")
               .format("YYYY-MM-DD HH:mm")}</p>
-            <p><strong>Ажилтан:</strong> ${booking.employee.name}</p>
+            <p><strong>Ажилтан:</strong> ${booking.employee.employeeName}</p>
             <p><strong>Компани:</strong> ${booking.company.companyName}</p>
             <p><strong>Захиалгын дугаар:</strong> ${booking._id.toString()}</p>
+            ${travelTimeText}
           </div>
           <p>Хэрэв та цагаа цуцлах эсвэл өөрчлөх шаардлагатай бол доорх холбоосоор орж үүднэ үү.</p>
           <a href="https://bookme.mn/bookings" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Захиалга харах</a>
@@ -137,11 +157,61 @@ export const sendReminderEmail = async (booking: PopulatedBookingDoc) => {
   }
 };
 
+// Function to get travel time from Google Directions API
+const getTravelTime = async (
+  origin: string,
+  destination: string
+): Promise<string | null> => {
+  try {
+    const apiKey = "AIzaSyBjLO6TQWZ5XC97pQvFCJm6OPeYbkv21CU";
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(
+        origin
+      )}&destination=${encodeURIComponent(
+        destination
+      )}&departure_time=now&traffic_model=best_guess&key=${apiKey}`
+    );
+
+    const data = await response.json();
+
+    if (data.status === "OK" && data.routes && data.routes[0]) {
+      // Try to get duration_in_traffic first, fallback to regular duration
+      const leg = data.routes[0].legs[0];
+      if (leg.duration_in_traffic) {
+        return leg.duration_in_traffic.text;
+      } else if (leg.duration) {
+        return leg.duration.text;
+      }
+    }
+
+    console.log(`Google Maps API error: ${data.status}`);
+    return null;
+  } catch (error) {
+    console.error("Error fetching travel time:", error);
+    return null;
+  }
+};
+
 export const sendReminderEmailPlain = async (booking: PopulatedBooking) => {
   try {
     if (!booking.user?.email) {
       console.log(`Skipping booking ${booking._id} - no user email`);
       return;
+    }
+
+    // Get travel time if both addresses are available
+    let travelTimeText = "";
+    if (booking.user?.address && booking.company?.address) {
+      const travelTime = await getTravelTime(
+        booking.user.address,
+        booking.company.address
+      );
+      if (travelTime) {
+        travelTimeText = `
+          <p><strong>🚗 Зам дээрх хугацаа:</strong> ${travelTime}</p>
+          <p style="color: #666; font-size: 14px;"><em>Таны одоогийн байршил (${booking.user.address})-аас ${booking.company.companyName} хүртэлх замын хугацаа</em></p>
+        `;
+      }
     }
 
     const mailOptions = {
@@ -157,11 +227,14 @@ export const sendReminderEmailPlain = async (booking: PopulatedBooking) => {
             <p><strong>Цаг:</strong> ${moment(booking.selectedTime)
               .tz("Asia/Ulaanbaatar")
               .format("YYYY-MM-DD HH:mm")}</p>
-            <p><strong>Ажилтан:</strong> ${booking.employee?.name || "N/A"}</p>
+            <p><strong>Ажилтан:</strong> ${
+              booking.employee?.employeeName || "N/A"
+            }</p>
             <p><strong>Компани:</strong> ${
               booking.company?.companyName || "N/A"
             }</p>
             <p><strong>Захиалгын дугаар:</strong> ${booking._id}</p>
+            ${travelTimeText}
           </div>
           <p>Хэрэв та цагаа цуцлах эсвэл өөрчлөх шаардлагатай бол доорх холбоосоор орж үүднэ үү.</p>
           <a href="https://bookme.mn/bookings" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Захиалга харах</a>
@@ -212,9 +285,12 @@ const checkAndSendReminders = async () => {
       status: "confirmed",
       $or: [{ reminderSent: { $exists: false } }, { reminderSent: false }],
     })
-      .populate<{ user: PopulatedUser }>("user", "username email phoneNumber")
-      .populate<{ employee: PopulatedEmployee }>("employee", "name")
-      .populate<{ company: PopulatedCompany }>("company", "companyName")
+      .populate<{ user: PopulatedUser }>(
+        "user",
+        "username email phoneNumber address"
+      )
+      .populate<{ employee: PopulatedEmployee }>("employee", "employeeName")
+      .populate<{ company: PopulatedCompany }>("company", "companyName address")
       .lean()
       .exec();
 
@@ -297,18 +373,20 @@ const checkAndSendReminders = async () => {
               username: booking.user.username,
               email: booking.user.email,
               phoneNumber: booking.user.phoneNumber,
+              address: booking.user.address,
             }
           : null,
         employee: booking.employee
           ? {
               _id: booking.employee._id.toString(),
-              name: booking.employee.name,
+              employeeName: booking.employee.employeeName,
             }
           : null,
         company: booking.company
           ? {
               _id: booking.company._id.toString(),
               companyName: booking.company.companyName,
+              address: booking.company.address,
             }
           : null,
         createdAt: booking.createdAt,

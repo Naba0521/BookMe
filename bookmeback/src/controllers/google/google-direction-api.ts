@@ -8,7 +8,7 @@ export const getTravelTime: RequestHandler = async (req, res) => {
     return;
   }
 
-  const apiKey = "AIzaSyDlBLYHFfHDRdJ9b7B02Kg-x5VXSV6iIVA";
+  const apiKey = "AIzaSyBjLO6TQWZ5XC97pQvFCJm6OPeYbkv21CU";
 
   if (!apiKey) {
     res.status(500).json({ error: "Missing Google Maps API key" });
@@ -21,6 +21,7 @@ export const getTravelTime: RequestHandler = async (req, res) => {
     );
 
     const data = await response.json();
+    console.log("Google Maps API response:", data);
 
     if (data.status !== "OK") {
       res.status(500).json({ error: `Google Maps error: ${data.status}` });
