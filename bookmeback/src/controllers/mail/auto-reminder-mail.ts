@@ -208,8 +208,8 @@ export const sendReminderEmailPlain = async (booking: PopulatedBooking) => {
       );
       if (travelTime) {
         travelTimeText = `
-          <p><strong>🚗 Зам дээрх хугацаа:</strong> ${travelTime}</p>
-          <p style="color: #666; font-size: 14px;"><em>Таны одоогийн байршил (${booking.user.address})-аас ${booking.company.companyName} хүртэлх замын хугацаа</em></p>
+          <p><strong>🚗 Очих хугацаа яг одоогийн байдлаар::</strong> ${travelTime}</p>
+          <p style="color: #666; font-size: 14px;"><em>Таны оруулсан байршил (${booking.user.address})-аас ${booking.company.companyName} компанийн хаяг хүртэлх замын хугацаа</em></p>
         `;
       }
     }
@@ -236,8 +236,10 @@ export const sendReminderEmailPlain = async (booking: PopulatedBooking) => {
             <p><strong>Захиалгын дугаар:</strong> ${booking._id}</p>
             ${travelTimeText}
           </div>
-          <p>Хэрэв та цагаа цуцлах эсвэл өөрчлөх шаардлагатай бол доорх холбоосоор орж үүднэ үү.</p>
-          <a href="https://bookme.mn/bookings" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Захиалга харах</a>
+          <p>Хэрэв та цагаа цуцлах эсвэл өөрчлөх шаардлагатай бол доорх холбоосоор орно уу.</p>
+          <a href="https://book-me-seven-sigma.vercel.app/company/${
+            booking.company?.companyName
+          }" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Захиалга харах</a>
           <br><br>
           <p>Баярлалаа,<br>BookMe багийнхан</p>
         </div>
